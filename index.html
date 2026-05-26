@@ -1,1 +1,190 @@
-<html><body><h1>Sustainable Heating Fleet Dashboard</h1><p>Loading...</p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Transgressions Dashboard — Sustainable Heating</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+  .header { background: linear-gradient(135deg, #1F5C8B 0%, #2E75B6 100%); color: white; padding: 24px 32px; }
+  .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .header p { font-size: 13px; opacity: 0.85; }
+  .header-meta { display: flex; gap: 24px; margin-top: 12px; font-size: 12px; opacity: 0.8; }
+  .container { max-width: 1300px; margin: 0 auto; padding: 24px 20px; }
+  .new-banner { background: #fff3cd; border: 1.5px solid #ffc107; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+  .new-banner h2 { font-size: 14px; font-weight: 700; color: #856404; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .new-banner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+  .new-item { background: white; border-radius: 7px; padding: 10px 14px; border-left: 4px solid #E24B4A; display: flex; flex-direction: column; gap: 3px; }
+  .new-item.late { border-left-color: #EF9F27; }
+  .new-item .ni-driver { font-weight: 600; font-size: 13px; color: #1a1a2e; }
+  .new-item .ni-detail { font-size: 12px; color: #555; }
+  .new-item .ni-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; width: fit-content; margin-top: 2px; }
+  .badge-late { background: #fef3dc; color: #854F0B; }
+  .badge-new { background: #f3e8ff; color: #6B21A8; }
+  .badge-escalation { background: #fee2e2; color: #991B1B; font-weight: 700; }
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .compare-card { background: white; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .compare-card h3 { font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .compare-week { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid #f0f0f0; }
+  .compare-week:last-child { border-bottom: none; }
+  .wk-label { font-size: 13px; color: #333; }
+  .wk-counts { display: flex; gap: 10px; font-size: 13px; }
+  .wk-late { color: #EF9F27; font-weight: 600; }
+  .wk-speed { color: #E24B4A; font-weight: 600; }
+  .wk-total { color: #333; font-weight: 700; }
+  .wk-new { background: #fef3dc; color: #854F0B; font-size: 11px; padding: 1px 7px; border-radius: 20px; font-weight: 600; }
+  .arrow-up { color: #E24B4A; font-size: 14px; }
+  .arrow-down { color: #27AE60; font-size: 14px; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .metric { background: white; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.06); border-top: 3px solid #2E75B6; }
+  .metric.red { border-top-color: #E24B4A; }
+  .metric.amber { border-top-color: #EF9F27; }
+  .metric.purple { border-top-color: #9B59B6; }
+  .metric-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .metric-value { font-size: 28px; font-weight: 700; color: #1a1a2e; line-height: 1; }
+  .metric-sub { font-size: 11px; color: #aaa; margin-top: 5px; }
+  .metric-delta { font-size: 12px; font-weight: 600; margin-top: 4px; }
+  .delta-up { color: #E24B4A; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: white; padding: 6px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06); width: fit-content; }
+  .tab { padding: 7px 16px; border: none; border-radius: 7px; font-size: 13px; cursor: pointer; background: transparent; color: #666; font-family: inherit; }
+  .tab.active { background: #1F5C8B; color: white; font-weight: 500; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .chart-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .chart-card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .chart-card h3 { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #666; margin-bottom: 10px; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .driver-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .driver-table th { text-align: left; color: #888; font-weight: 600; font-size: 11px; text-transform: uppercase; padding: 8px 12px; border-bottom: 1.5px solid #eee; }
+  .driver-table td { padding: 10px 12px; border-bottom: 0.5px solid #f5f5f5; color: #1a1a2e; vertical-align: middle; }
+  .driver-table tr.highlight-row td { background: #fffbf0; }
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-high { background: #fde8e8; color: #A32D2D; }
+  .badge-med { background: #fef3dc; color: #854F0B; }
+  .badge-low { background: #eaf6ec; color: #1E6B35; }
+  .bar-bg { background: #f0f0f0; border-radius: 3px; height: 7px; overflow: hidden; min-width: 80px; }
+  .bar-fill { height: 7px; border-radius: 3px; }
+  .new-tag { font-size: 10px; background: #f3e8ff; color: #6B21A8; padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-left: 5px; }
+  .changed-tag { font-size: 10px; background: #fde8e8; color: #A32D2D; padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-left: 5px; }
+  .filter-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .filter-row select { font-size: 13px; padding: 6px 12px; border: 1px solid #ddd; border-radius: 7px; background: white; color: #333; }
+  .incident-list { display: flex; flex-direction: column; gap: 7px; max-height: 460px; overflow-y: auto; }
+  .inc-card { background: white; border-radius: 8px; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .inc-card.inc-new { border-left: 3px solid #E24B4A; }
+  .inc-card.inc-new-late { border-left: 3px solid #EF9F27; }
+  .inc-driver { font-weight: 600; font-size: 13px; }
+  .inc-detail { font-size: 12px; color: #666; margin-top: 2px; }
+  .inc-vehicle { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .inc-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .inc-date { font-size: 11px; color: #aaa; }
+  .week-badge { font-size: 10px; background: #fde8e8; color: #A32D2D; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+  .week-badge.late { background: #fef3dc; color: #854F0B; }
+  .trend-card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .footer { text-align: center; color: #bbb; font-size: 11px; padding: 20px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🚗 Vehicle Transgressions Dashboard</h1>
+  <p>Sustainable Heating — Fleet Intelligence Report</p>
+  <div class="header-meta">
+    <span>📅 Data period: June 2025 – 24 May 2026</span>
+    <span>📧 Source: Weekly Vehicle Tracking emails</span>
+    <span>🔄 Latest week: 18–24 May 2026</span>
+  </div>
+</div>
+<div class="container">
+  <div class="new-banner">
+    <h2>⚠️ NEW THIS WEEK — 18–24 May 2026 (vs previous week 11–17 May)</h2>
+    <div class="new-banner-grid">
+      <div class="new-item"><span class="ni-driver">Ricardo Krige — Ford Ranger CEY78059</span><span class="ni-detail">139 km/h on 22/5 — HIGHEST SPEED IN ENTIRE DATASET</span><span class="ni-detail">Also: 131 km/h + 134 km/h on 24/5 + Late drive 22:15–22:23</span><span class="ni-badge badge-escalation">🔺 ESCALATION — was 2 speedings last week</span></div>
+      <div class="new-item"><span class="ni-driver">Unknown Driver — Man Truck CEY69471</span><span class="ni-detail">8 speedings of 85 km/h+ this week</span><span class="ni-badge badge-escalation">🔺 ESCALATION — was 1 last week (×8 increase)</span></div>
+      <div class="new-item late"><span class="ni-driver">Sifiso — Opel Combo CEY19309</span><span class="ni-detail">20/5, 22:29–23:57 — 88 minutes after curfew</span><span class="ni-badge badge-new">🆕 New driver in report</span></div>
+      <div class="new-item late"><span class="ni-driver">Ricardo Govender — VW Touran CEY63250</span><span class="ni-detail">20/5, 23:22–23:36 late drive</span><span class="ni-badge badge-new">🆕 New driver in report</span></div>
+      <div class="new-item late"><span class="ni-driver">Nardino — Nissan NP300 CEY11873</span><span class="ni-detail">21/5, 22:47–23:18 late drive</span><span class="ni-badge badge-late">Repeat offender — continuing pattern</span></div>
+      <div class="new-item"><span class="ni-driver">Wise — Nissan UD370 CEY48451</span><span class="ni-detail">1 speeding of 85 km/h+ on heavy vehicle</span><span class="ni-badge badge-new">🆕 New driver in report</span></div>
+      <div class="new-item"><span class="ni-driver">Ben — Merc Actros CEY63155</span><span class="ni-detail">1 speeding of 85 km/h+ (heavy vehicle)</span><span class="ni-badge badge-late">Continuing — 10th speeding incident overall</span></div>
+      <div class="new-item late" style="border-left-color:#27AE60"><span class="ni-driver">✅ Godwin — Chev Utility CEY29293</span><span class="ni-detail">No incidents this week</span><span class="ni-badge" style="background:#eaf6ec;color:#1E6B35;">Improvement — was 9 incidents last week</span></div>
+    </div>
+  </div>
+  <div class="compare-row">
+    <div class="compare-card">
+      <h3>📊 Week-on-Week Incident Count</h3>
+      <div class="compare-week" style="font-weight:700;font-size:12px;color:#999;border-bottom:1.5px solid #eee;"><span>Week</span><span style="display:flex;gap:40px;padding-right:8px"><span>Late</span><span>Speed</span><span>Total</span></span></div>
+      <div class="compare-week" style="background:#f9f9f9"><span class="wk-label">4–10 May</span><div class="wk-counts"><span class="wk-late">0</span><span class="wk-speed">5</span><span class="wk-total">5</span></div></div>
+      <div class="compare-week"><span class="wk-label">11–17 May <span class="wk-new">prev</span></span><div class="wk-counts"><span class="wk-late">9</span><span class="wk-speed">9</span><span class="wk-total">18 <span class="arrow-up">↑</span></span></div></div>
+      <div class="compare-week" style="background:#fffbf0;font-weight:600"><span class="wk-label">18–24 May <span class="wk-new" style="background:#fde8e8;color:#A32D2D">NEW</span></span><div class="wk-counts"><span class="wk-late">4</span><span class="wk-speed">12</span><span class="wk-total">16 <span class="arrow-down">↓</span></span></div></div>
+    </div>
+    <div class="compare-card">
+      <h3>🔍 Driver Changes This Week vs Last</h3>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid #f0f0f0"><span>Ricardo Krige</span><span><span style="color:#E24B4A;font-weight:700">↑ 2→4 incidents</span> (139 km/h!)</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid #f0f0f0"><span>Unknown (Man Truck)</span><span><span style="color:#E24B4A;font-weight:700">↑ 1→8 speedings</span></span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid #f0f0f0"><span>Godwin</span><span><span style="color:#27AE60;font-weight:700">↓ 9→0 incidents</span> ✅</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid #f0f0f0"><span>Sifiso</span><span><span style="color:#9B59B6;font-weight:700">NEW — 1 late drive</span></span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid #f0f0f0"><span>Ricardo Govender</span><span><span style="color:#9B59B6;font-weight:700">NEW — 1 late drive</span></span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>Wise</span><span><span style="color:#9B59B6;font-weight:700">NEW — 1 speeding</span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Total incidents (all time)</div><div class="metric-value">158</div><div class="metric-sub">June 2025 – 24 May 2026</div><div class="metric-delta delta-up">+16 this week</div></div>
+    <div class="metric amber"><div class="metric-label">Late-night driving</div><div class="metric-value">95</div><div class="metric-sub">Drives after 22:00</div><div class="metric-delta delta-up">+4 this week</div></div>
+    <div class="metric red"><div class="metric-label">Speeding incidents</div><div class="metric-value">63</div><div class="metric-sub">85 km/h+ flagged</div><div class="metric-delta delta-up">+12 this week</div></div>
+    <div class="metric purple"><div class="metric-label">Repeat offenders</div><div class="metric-value">9</div><div class="metric-sub">Drivers with 5+ incidents</div><div class="metric-delta delta-up">+3 new drivers this week</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" onclick="switchTab('drivers')">By Driver</button>
+    <button class="tab" onclick="switchTab('incidents')">Incident Log</button>
+    <button class="tab" onclick="switchTab('trend')">Weekly Trend</button>
+  </div>
+  <div id="tab-overview" class="tab-content active">
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Incidents per driver (all time)</h3><div class="legend"><span><span class="leg-sq" style="background:#E24B4A"></span>Speeding</span><span><span class="leg-sq" style="background:#EF9F27"></span>Late night</span></div><div style="height:360px"><canvas id="driverBar"></canvas></div></div>
+      <div>
+        <div class="chart-card" style="margin-bottom:14px"><h3>Transgression type split</h3><div class="legend"><span><span class="leg-sq" style="background:#EF9F27"></span>Late night 60%</span><span><span class="leg-sq" style="background:#E24B4A"></span>Speeding 40%</span></div><div style="height:170px"><canvas id="typeDonut"></canvas></div></div>
+        <div class="chart-card"><h3>Top vehicles by incident count</h3><div style="height:140px"><canvas id="vehicleBar"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-drivers" class="tab-content">
+    <div class="chart-card"><h3>Driver risk profile — updated 24 May 2026</h3><table class="driver-table"><thead><tr><th>Driver</th><th>Late</th><th>Speed</th><th>Total</th><th>Max speed</th><th>This week</th><th>Risk</th><th>Severity</th></tr></thead><tbody id="driver-tbody"></tbody></table></div>
+  </div>
+  <div id="tab-incidents" class="tab-content">
+    <div class="filter-row">
+      <select id="filter-type" onchange="renderIncidents()"><option value="all">All types</option><option value="speed">Speeding only</option><option value="late">Late-night only</option><option value="new">This week only</option></select>
+      <select id="filter-driver" onchange="renderIncidents()"><option value="all">All drivers</option></select>
+    </div>
+    <div class="incident-list" id="incident-list"></div>
+  </div>
+  <div id="tab-trend" class="tab-content">
+    <div class="trend-card"><h3 style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px">Weekly incident trend — June 2025 to 24 May 2026</h3><div class="legend"><span><span class="leg-sq" style="background:#E24B4A"></span>Speeding</span><span><span class="leg-sq" style="background:#EF9F27"></span>Late night</span></div><div style="height:300px"><canvas id="trendLine"></canvas></div></div>
+  </div>
+</div>
+<div class="footer">Sustainable Heating · Vehicle Transgressions Dashboard · Generated by Jarvis · 26 May 2026 · Confidential — EXCO Distribution</div>
+<script>
+const DRIVERS=[{name:'Godwin',late:22,speed:0,maxSpeed:null,thisWeek:'None ✅',isNew:false,changed:true},{name:'Ricardo Krige',late:1,speed:11,maxSpeed:139,thisWeek:'1 late + 3 speed 🔺',isNew:false,changed:true},{name:'Ben',late:0,speed:10,maxSpeed:null,thisWeek:'1 speeding',isNew:false,changed:false},{name:'Nardino',late:7,speed:5,maxSpeed:134,thisWeek:'1 late drive',isNew:false,changed:false},{name:'Headman',late:7,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Siyabonga',late:5,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Marius Gerber',late:5,speed:2,maxSpeed:130,thisWeek:'None',isNew:false,changed:false},{name:'Randal',late:5,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Siseko',late:4,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Atwell',late:4,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Unknown (Man Truck)',late:0,speed:10,maxSpeed:null,thisWeek:'8 speedings 🔺',isNew:false,changed:true},{name:'Lovemore',late:0,speed:4,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Sifiso',late:1,speed:0,maxSpeed:null,thisWeek:'1 late drive 🆕',isNew:true,changed:false},{name:'Ricardo Govender',late:1,speed:0,maxSpeed:null,thisWeek:'1 late drive 🆕',isNew:true,changed:false},{name:'Wise',late:0,speed:1,maxSpeed:null,thisWeek:'1 speeding 🆕',isNew:true,changed:false},{name:'Edgar',late:0,speed:3,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Ricardo (Touran)',late:3,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Shal',late:1,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false},{name:'Riaa',late:1,speed:0,maxSpeed:null,thisWeek:'None',isNew:false,changed:false}].sort((a,b)=>(b.late+b.speed)-(a.late+a.speed));
+const INCIDENTS=[{driver:'Ricardo Krige',type:'speed',date:'22 May 2026',detail:'139 km/h — new fleet record',vehicle:'Ford Ranger CEY78059',isNew:true},{driver:'Ricardo Krige',type:'speed',date:'24 May 2026',detail:'131 km/h',vehicle:'Ford Ranger CEY78059',isNew:true},{driver:'Ricardo Krige',type:'speed',date:'24 May 2026',detail:'134 km/h',vehicle:'Ford Ranger CEY78059',isNew:true},{driver:'Ricardo Krige',type:'late',date:'21 May 2026',detail:'22:15–22:23',vehicle:'Ford Ranger CEY78059',isNew:true},{driver:'Unknown (Man Truck)',type:'speed',date:'18–24 May 2026',detail:'8 × 85 km/h+',vehicle:'Man Truck CEY69471',isNew:true},{driver:'Nardino',type:'late',date:'21 May 2026',detail:'22:47–23:18',vehicle:'Nissan NP300 CEY11873',isNew:true},{driver:'Ben',type:'speed',date:'18–24 May 2026',detail:'85 km/h+',vehicle:'Merc Actros CEY63155',isNew:true},{driver:'Sifiso',type:'late',date:'20 May 2026',detail:'22:29–23:57 (88 min after curfew)',vehicle:'Opel Combo CEY19309',isNew:true},{driver:'Ricardo Govender',type:'late',date:'20 May 2026',detail:'23:22–23:36',vehicle:'VW Touran CEY63250',isNew:true},{driver:'Wise',type:'speed',date:'18–24 May 2026',detail:'85 km/h+ (heavy vehicle)',vehicle:'Nissan UD370 CEY48451',isNew:true},{driver:'Godwin',type:'late',date:'12 May 2026',detail:'22:19–22:32, 23:48–00:11, multiple trips',vehicle:'Chev Utility CEY29293',isNew:false},{driver:'Ricardo Krige',type:'speed',date:'16 May 2026',detail:'132 km/h + 136 km/h',vehicle:'Ford Ranger CEY78059',isNew:false},{driver:'Nardino',type:'late',date:'14 May 2026',detail:'01:44–03:57',vehicle:'Nissan NP300 CEY11873',isNew:false},{driver:'Nardino',type:'speed',date:'14–15 May 2026',detail:'131 km/h + 134 km/h',vehicle:'Nissan NP300 CEY11873',isNew:false},{driver:'Ben',type:'speed',date:'4–17 May 2026',detail:'9 × 85 km/h+ (prev weeks)',vehicle:'Merc Actros CEY63155',isNew:false},{driver:'Marius Gerber',type:'speed',date:'4–10 May 2026',detail:'130 km/h',vehicle:'Mitsubishi Triton CEY74727',isNew:false},{driver:'Ricardo Krige',type:'speed',date:'27 Apr–3 May',detail:'133 km/h + 131 km/h',vehicle:'Ford Ranger CEY78059',isNew:false},{driver:'Headman',type:'late',date:'Jul–Aug 2025',detail:'Multiple 00:00–01:00 drives',vehicle:'Chev Utility CEY22432',isNew:false},{driver:'Siyabonga',type:'late',date:'Jun–Sep 2025',detail:'Multiple late drives',vehicle:'Ford Ranger CEY78059',isNew:false},{driver:'Atwell',type:'late',date:'Jun 2025',detail:'00:50–01:18, 22:50–22:57',vehicle:'Isuzu KB300 CEY71650',isNew:false},{driver:'Lovemore',type:'speed',date:'May–Jun 2025',detail:'4 × 85 km/h+',vehicle:'Isuzu F1400 CEY28255',isNew:false}];
+const WEEKLY=[{week:'Jun–Jul 25',late:4,speed:0},{week:'Jul–Aug 25',late:8,speed:0},{week:'Aug–Sep 25',late:5,speed:0},{week:'Sep 25',late:4,speed:0},{week:'Oct–Nov 25',late:0,speed:0},{week:'Nov–Dec 25',late:0,speed:0},{week:'Dec–Jan 26',late:0,speed:0},{week:'Jan–Feb 26',late:2,speed:0},{week:'Feb–Mar 26',late:0,speed:0},{week:'Apr 26',late:2,speed:2},{week:'27 Apr–3 May',late:0,speed:2},{week:'4–10 May',late:0,speed:5},{week:'11–17 May',late:9,speed:9},{week:'18–24 May ★',late:4,speed:12}];
+function switchTab(id){document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','drivers','incidents','trend'][i]===id));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');}
+function riskBadge(d){const t=d.late+d.speed;if(t>=10||d.maxSpeed>=130)return['High','badge-high'];if(t>=5||d.maxSpeed>=100)return['Medium','badge-med'];return['Low','badge-low'];}
+function buildDriverTable(){const tbody=document.getElementById('driver-tbody');const max=Math.max(...DRIVERS.map(d=>d.late+d.speed));tbody.innerHTML=DRIVERS.map(d=>{const t=d.late+d.speed;const[rl,rc]=riskBadge(d);const pct=Math.round(t/max*100);const bc=rc==='badge-high'?'#E24B4A':rc==='badge-med'?'#EF9F27':'#27AE60';const ms=d.maxSpeed?d.maxSpeed+' km/h':'—';const nt=d.isNew?'<span class="new-tag">NEW</span>':'';const ct=d.changed?'<span class="changed-tag">CHANGED</span>':'';return`<tr class="${d.changed||d.isNew?'highlight-row':''}"><td style="font-weight:600">${d.name}${nt}${ct}</td><td>${d.late}</td><td>${d.speed}</td><td style="font-weight:700">${t}</td><td>${ms}</td><td style="font-size:12px;color:#555">${d.thisWeek}</td><td><span class="badge ${rc}">${rl}</span></td><td style="min-width:90px"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${bc}"></div></div></td></tr>`;}).join('');}
+function renderIncidents(){const ft=document.getElementById('filter-type').value;const fd=document.getElementById('filter-driver').value;const list=document.getElementById('incident-list');const f=INCIDENTS.filter(i=>(ft==='all'||(ft==='speed'&&i.type==='speed')||(ft==='late'&&i.type==='late')||(ft==='new'&&i.isNew))&&(fd==='all'||i.driver===fd));list.innerHTML=f.map(i=>{const cls=i.isNew?(i.type==='speed'?'inc-new':'inc-new-late'):'';const nl=i.isNew?`<span class="week-badge ${i.type==='late'?'late':''}">NEW THIS WEEK</span>`:'';return`<div class="inc-card ${cls}"><div><div class="inc-driver">${i.driver}${i.isNew?' <span style="font-size:11px;color:#9B59B6;font-weight:600">★</span>':''}</div><div class="inc-detail">${i.detail}</div><div class="inc-vehicle">${i.vehicle}</div></div><div class="inc-right"><span class="badge ${i.type==='speed'?'badge-high':'badge-med'}">${i.type==='speed'?'Speeding':'Late night'}</span>${nl}<span class="inc-date">${i.date}</span></div></div>`;}).join('');}
+function buildDriverFilter(){const sel=document.getElementById('filter-driver');[...new Set(INCIDENTS.map(i=>i.driver))].sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});}
+window.addEventListener('load',()=>{
+buildDriverTable();buildDriverFilter();renderIncidents();
+const s=[...DRIVERS].sort((a,b)=>(b.late+b.speed)-(a.late+a.speed));
+new Chart(document.getElementById('driverBar'),{type:'bar',data:{labels:s.map(d=>d.name),datasets:[{label:'Speeding',data:s.map(d=>d.speed),backgroundColor:'#E24B4A',borderWidth:0},{label:'Late night',data:s.map(d=>d.late),backgroundColor:s.map(d=>d.isNew?'#C39BD3':'#EF9F27'),borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},y:{stacked:true,ticks:{font:{size:11}}}}}});
+new Chart(document.getElementById('typeDonut'),{type:'doughnut',data:{labels:['Late-night','Speeding'],datasets:[{data:[95,63],backgroundColor:['#EF9F27','#E24B4A'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
+const veh=[{v:'Chev Utility CEY29293',n:22},{v:'Ford Ranger CEY78059',n:18},{v:'Man Truck CEY69471',n:11},{v:'Merc Actros CEY63155',n:10},{v:'Nissan NP300 CEY11873',n:9},{v:'Isuzu KB300 CEY71650',n:5}];
+new Chart(document.getElementById('vehicleBar'),{type:'bar',data:{labels:veh.map(v=>v.v.split(' ').slice(0,3).join(' ')),datasets:[{data:veh.map(v=>v.n),backgroundColor:'#378ADD',borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:10}}}}}});
+new Chart(document.getElementById('trendLine'),{type:'line',data:{labels:WEEKLY.map(w=>w.week),datasets:[{label:'Speeding',data:WEEKLY.map(w=>w.speed),borderColor:'#E24B4A',backgroundColor:'rgba(226,75,74,.08)',tension:.3,borderDash:[4,3],pointRadius:3,fill:true},{label:'Late night',data:WEEKLY.map(w=>w.late),borderColor:'#EF9F27',backgroundColor:'rgba(239,159,39,.08)',tension:.3,pointRadius:3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:45}},y:{ticks:{stepSize:2,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}}}}});
+});
+</script>
+</body>
+</html>
