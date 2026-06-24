@@ -6,799 +6,677 @@
 <title>Sustainable Heating — Fleet Transgressions Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --speed: #E24B4A;
-    --late: #EF9F27;
-    --vehicle: #378ADD;
-    --new-driver: #9B59B6;
-    --bg: #f0f2f5;
-    --card: #ffffff;
-    --text: #1a1a2e;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --header-from: #1F5C8B;
-    --header-to: #2E75B6;
-    --escalation: #dc2626;
-    --improvement: #16a34a;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; }
 
-  /* HEADER */
   .header {
-    background: linear-gradient(135deg, var(--header-from), var(--header-to));
-    color: white;
-    padding: 20px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: linear-gradient(135deg, #1F5C8B 0%, #2E75B6 100%);
+    color: white; padding: 24px 32px;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
-  .header .subtitle { font-size: 12px; opacity: 0.85; margin-top: 3px; }
-  .header .meta { text-align: right; font-size: 12px; opacity: 0.85; }
+  .header h1 { font-size: 1.6rem; font-weight: 700; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .header-badge { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 16px; text-align: center; }
+  .header-badge .week { font-size: 1rem; font-weight: 600; }
+  .header-badge .label { font-size: 0.75rem; opacity: 0.8; }
+
+  .container { max-width: 1300px; margin: 0 auto; padding: 24px 20px; }
 
   /* NEW THIS WEEK BANNER */
-  .new-banner {
-    background: #fffbeb;
-    border-bottom: 2px solid #f59e0b;
-    padding: 14px 28px;
-  }
-  .new-banner h2 { font-size: 13px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .new-cards { display: flex; flex-wrap: wrap; gap: 10px; }
+  .new-banner { background: #fff8e6; border: 1px solid #f0c040; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+  .new-banner h2 { font-size: 1rem; color: #b8860b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .new-cards { display: flex; flex-wrap: wrap; gap: 12px; }
   .new-card {
-    background: white;
-    border-radius: 8px;
-    padding: 10px 14px;
-    min-width: 200px;
-    border-left: 4px solid;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: white; border-radius: 8px; padding: 14px 16px;
+    min-width: 200px; flex: 1 1 200px; max-width: 300px;
+    border-left: 4px solid #EF9F27;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   }
-  .new-card.speed { border-color: var(--speed); }
-  .new-card.late { border-color: var(--late); }
-  .new-card.both { border-color: #7c3aed; }
-  .new-card .driver-name { font-weight: 700; font-size: 13px; }
-  .new-card .card-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .badge {
-    display: inline-block;
-    padding: 2px 7px;
-    border-radius: 99px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 5px;
-  }
-  .badge.escalation { background: #fee2e2; color: var(--escalation); }
-  .badge.new-driver { background: #f3e8ff; color: var(--new-driver); }
-  .badge.repeat { background: #fef3c7; color: #92400e; }
-  .badge.improvement { background: #dcfce7; color: var(--improvement); }
+  .new-card.speed { border-left-color: #E24B4A; }
+  .new-card.both { border-left-color: #9B59B6; }
+  .new-card .driver-name { font-weight: 700; font-size: 0.95rem; color: #222; }
+  .new-card .vehicle { font-size: 0.78rem; color: #666; margin-top: 2px; }
+  .new-card .incidents { font-size: 0.82rem; margin-top: 6px; color: #444; }
+  .badge { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-top: 6px; }
+  .badge.escalation { background: #fde8e8; color: #c0392b; }
+  .badge.new-driver { background: #ede0f7; color: #7d3c98; }
+  .badge.repeat { background: #fef3cd; color: #856404; }
+  .badge.improvement { background: #e6f4ea; color: #2d6a4f; }
 
-  /* WEEK ON WEEK PANEL */
-  .wow-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 16px 28px;
-    background: #eef2f7;
-    border-bottom: 1px solid var(--border);
-  }
-  .wow-card { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
-  .wow-card h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 10px; }
-  .wow-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .wow-table th { text-align: left; padding: 4px 8px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
-  .wow-table td { padding: 5px 8px; border-bottom: 1px solid #f3f4f6; }
+  /* WEEK ON WEEK */
+  .wow-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  @media (max-width: 768px) { .wow-section { grid-template-columns: 1fr; } }
+  .card { background: white; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .card h3 { font-size: 0.95rem; font-weight: 600; color: #1F5C8B; margin-bottom: 14px; }
+
+  .wow-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .wow-table th { text-align: left; padding: 6px 10px; background: #f5f7fa; color: #555; font-weight: 600; }
+  .wow-table td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
   .wow-table tr:last-child td { border-bottom: none; }
-  .delta-up { color: var(--escalation); font-weight: 700; }
-  .delta-down { color: var(--improvement); font-weight: 700; }
-  .delta-same { color: var(--muted); }
-  .driver-change { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
-  .driver-change:last-child { border-bottom: none; }
+  .wow-table .current { font-weight: 700; background: #f0f7ff; }
+  .up { color: #c0392b; } .down { color: #2d6a4f; } .same { color: #888; }
 
-  /* METRIC CARDS */
-  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 16px 28px; }
-  .metric-card {
-    background: white;
-    border-radius: 10px;
-    padding: 16px 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    border-top: 3px solid;
-  }
-  .metric-card.total { border-color: var(--header-from); }
-  .metric-card.late { border-color: var(--late); }
-  .metric-card.speed { border-color: var(--speed); }
-  .metric-card.repeat { border-color: var(--new-driver); }
-  .metric-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 600; }
-  .metric-value { font-size: 32px; font-weight: 800; line-height: 1.1; margin-top: 6px; }
-  .metric-delta { font-size: 11px; margin-top: 4px; font-weight: 600; }
-  .metric-delta.up { color: var(--escalation); }
-  .metric-delta.down { color: var(--improvement); }
-  .metric-delta.same { color: var(--muted); }
+  .change-list { list-style: none; font-size: 0.84rem; }
+  .change-list li { padding: 5px 0; border-bottom: 1px solid #f5f5f5; display: flex; align-items: center; gap: 8px; }
+  .change-list li:last-child { border-bottom: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.red { background: #E24B4A; } .dot.amber { background: #EF9F27; } .dot.green { background: #27ae60; } .dot.purple { background: #9B59B6; }
+
+  /* METRICS */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 900px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+  .metric-card { background: white; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); text-align: center; }
+  .metric-card .value { font-size: 2rem; font-weight: 800; color: #1F5C8B; }
+  .metric-card .label { font-size: 0.78rem; color: #666; margin-top: 4px; }
+  .metric-card .delta { font-size: 0.82rem; margin-top: 6px; font-weight: 600; }
+  .delta.up { color: #c0392b; } .delta.down { color: #27ae60; } .delta.same { color: #888; }
 
   /* TABS */
-  .tabs-container { padding: 0 28px; margin-top: 4px; }
-  .tab-bar { display: flex; gap: 2px; border-bottom: 2px solid var(--border); }
-  .tab-btn {
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    background: none;
-    color: var(--muted);
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.15s;
-  }
-  .tab-btn:hover { color: var(--header-from); }
-  .tab-btn.active { color: var(--header-from); border-bottom-color: var(--header-from); }
-  .tab-content { display: none; padding: 20px 0; }
+  .tabs { background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 24px; }
+  .tab-nav { display: flex; border-bottom: 1px solid #eee; background: #f9f9f9; }
+  .tab-btn { padding: 12px 20px; font-size: 0.88rem; font-weight: 600; color: #666; cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab-btn:hover { color: #1F5C8B; }
+  .tab-btn.active { color: #1F5C8B; border-bottom-color: #1F5C8B; background: white; }
+  .tab-content { padding: 24px; display: none; }
   .tab-content.active { display: block; }
 
-  /* CHARTS GRID */
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .charts-grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
-  .chart-card {
-    background: white;
-    border-radius: 10px;
-    padding: 16px 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-  }
-  .chart-card h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 12px; }
-  .chart-wrapper { position: relative; height: 240px; }
+  /* CHARTS */
+  .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .chart-grid, .chart-grid-3 { grid-template-columns: 1fr; } }
+  .chart-box h4 { font-size: 0.85rem; color: #555; margin-bottom: 12px; font-weight: 600; }
+  canvas { max-width: 100%; }
 
-  /* TABLE */
-  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-  .data-table thead { background: #f8fafc; }
-  .data-table th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); border-bottom: 2px solid var(--border); }
-  .data-table td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: #fafbfc; }
-  .data-table tr.high-risk td { background: #fff5f5; }
-  .data-table tr.high-risk:hover td { background: #fef2f2; }
-  .risk-badge {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 99px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .risk-high { background: #fee2e2; color: #b91c1c; }
-  .risk-medium { background: #fef3c7; color: #b45309; }
-  .risk-low { background: #dcfce7; color: #15803d; }
-  .tag-new { background: #f3e8ff; color: var(--new-driver); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; margin-left: 4px; }
-  .tag-changed { background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; margin-left: 4px; }
+  /* DRIVER TABLE */
+  .driver-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .driver-table th { text-align: left; padding: 10px 12px; background: #f5f7fa; color: #444; font-weight: 600; position: sticky; top: 0; }
+  .driver-table td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  .driver-table tr:hover td { background: #fafbfc; }
+  .driver-table tr.high-risk td { background: #fff5f5; }
+  .driver-table tr.medium-risk td { background: #fffcf0; }
+  .risk-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
+  .risk-badge.high { background: #fde8e8; color: #c0392b; }
+  .risk-badge.medium { background: #fef3cd; color: #856404; }
+  .risk-badge.low { background: #e6f4ea; color: #2d6a4f; }
+  .tag-new { display: inline-block; background: #ede0f7; color: #7d3c98; font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
+  .tag-changed { display: inline-block; background: #fde8e8; color: #c0392b; font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
 
   /* INCIDENT LOG */
-  .log-filters { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .filter-btn {
-    padding: 5px 14px;
-    border-radius: 99px;
-    border: 1.5px solid var(--border);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    background: white;
-    color: var(--muted);
-    transition: all 0.15s;
-  }
-  .filter-btn.active { border-color: var(--header-from); color: var(--header-from); background: #eff6ff; }
-  .incident-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); font-size: 13px; }
-  .incident-table th { padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); background: #f8fafc; border-bottom: 2px solid var(--border); }
-  .incident-table td { padding: 9px 14px; border-bottom: 1px solid #f3f4f6; }
-  .incident-table tr:last-child td { border-bottom: none; }
-  .incident-table tr:hover td { background: #fafbfc; }
-  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
-  .type-speed { background: #fee2e2; color: #b91c1c; }
-  .type-late { background: #fef3c7; color: #92400e; }
-  .new-week-badge { background: #f3e8ff; color: var(--new-driver); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; }
+  .filter-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-row select { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.84rem; }
+  .incident-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  .incident-table th { text-align: left; padding: 9px 12px; background: #f5f7fa; color: #444; font-weight: 600; }
+  .incident-table td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+  .incident-table tr.new-incident td { background: #fffbf0; }
+  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
+  .type-badge.speed { background: #fde8e8; color: #c0392b; }
+  .type-badge.late { background: #fef3cd; color: #856404; }
+  .new-incident-badge { display: inline-block; background: #fff3cd; color: #856404; font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
+
+  /* TREND TAB */
+  .trend-wrap { max-width: 900px; margin: 0 auto; }
 
   /* FOOTER */
-  .footer {
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-    padding: 16px 28px;
-    border-top: 1px solid var(--border);
-    margin-top: 20px;
-  }
+  .footer { text-align: center; font-size: 0.74rem; color: #999; padding: 20px; border-top: 1px solid #e8e8e8; background: white; margin-top: 8px; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div>
-    <div class="h1" style="font-size:20px;font-weight:800;letter-spacing:.3px;color:white;">🚛 Sustainable Heating — Fleet Transgressions Dashboard</div>
-    <div class="subtitle">Tracking speeding (85 km/h+) and late-night driving (after 22:00) · June 2025 to date</div>
+    <h1>🚛 Fleet Transgressions Dashboard</h1>
+    <p>Sustainable Heating · Speeding (85km/h+) &amp; Late-Night Driving (After 22:00) · June 2025 – Present</p>
   </div>
-  <div class="meta">
-    Generated by Jarvis<br>
-    1 June 2026
-  </div>
-</div>
-
-<!-- NEW THIS WEEK BANNER -->
-<div class="new-banner">
-  <h2>🔔 New This Week — 25–31 May 2026</h2>
-  <div class="new-cards">
-
-    <div class="new-card speed">
-      <div class="driver-name">Ricardo Krige</div>
-      <div class="card-detail">Ford Ranger CEY78059 · 149 km/h — new all-time peak</div>
-      <span class="badge escalation">⚠ Escalation</span>
-    </div>
-
-    <div class="new-card late">
-      <div class="driver-name">Siseko</div>
-      <div class="card-detail">Nissan NP200 CEY19762 · 3 late drives (3 trips past midnight)</div>
-      <span class="badge repeat">Repeat</span>
-    </div>
-
-    <div class="new-card late">
-      <div class="driver-name">Ricardo Govender</div>
-      <div class="card-detail">VW Touran CEY63250 · 2 late drives (22:08 & 23:10)</div>
-      <span class="badge repeat">Repeat</span>
-    </div>
-
-    <div class="new-card late">
-      <div class="driver-name">Shaquill</div>
-      <div class="card-detail">Merc Vito CEY13038 · 1 late drive (23:33 – 23:58)</div>
-      <span class="badge new-driver">New Driver</span>
-    </div>
-
+  <div class="header-badge">
+    <div class="week">15 – 21 Jun 2026</div>
+    <div class="label">Current Report Week</div>
   </div>
 </div>
 
-<!-- WEEK ON WEEK COMPARISON -->
-<div class="wow-panel">
-  <div class="wow-card">
-    <h3>📅 3-Week Trend</h3>
-    <table class="wow-table">
-      <thead>
-        <tr>
-          <th>Week</th>
-          <th>Late</th>
-          <th>Speed</th>
-          <th>Total</th>
-          <th>vs Prev</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>4–10 May</td>
-          <td>0</td>
-          <td>5</td>
-          <td>5</td>
-          <td class="delta-same">—</td>
-        </tr>
-        <tr>
-          <td>11–17 May</td>
-          <td>10</td>
-          <td>11</td>
-          <td>21</td>
-          <td class="delta-up">↑ +16</td>
-        </tr>
-        <tr style="font-weight:700; background:#fafbff;">
-          <td>25–31 May ⭐</td>
-          <td>6</td>
-          <td>1</td>
-          <td>7</td>
-          <td class="delta-down">↓ −14</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="wow-card">
-    <h3>👤 Driver Changes This Week</h3>
-    <div class="driver-change">
-      <span><strong>Ricardo Krige</strong> — 149 km/h speeding</span>
-      <span class="badge escalation">↑ Escalation</span>
-    </div>
-    <div class="driver-change">
-      <span><strong>Godwin</strong> — no incidents this week</span>
-      <span class="badge improvement">↓ Improvement</span>
-    </div>
-    <div class="driver-change">
-      <span><strong>Shaquill</strong> — first appearance</span>
-      <span class="badge new-driver">New Driver</span>
-    </div>
-    <div class="driver-change">
-      <span><strong>Nardino</strong> — no incidents this week</span>
-      <span class="badge improvement">↓ Improvement</span>
-    </div>
-    <div class="driver-change">
-      <span><strong>Ben</strong> — no incidents this week</span>
-      <span class="badge improvement">↓ Improvement</span>
-    </div>
-  </div>
-</div>
+<div class="container">
 
-<!-- METRIC CARDS -->
-<div class="metrics">
-  <div class="metric-card total">
-    <div class="metric-label">Total Incidents (All Time)</div>
-    <div class="metric-value" style="color:var(--header-from);">108</div>
-    <div class="metric-delta up">+7 this week</div>
-  </div>
-  <div class="metric-card late">
-    <div class="metric-label">Late-Night Driving</div>
-    <div class="metric-value" style="color:var(--late);">58</div>
-    <div class="metric-delta up">+6 this week</div>
-  </div>
-  <div class="metric-card speed">
-    <div class="metric-label">Speeding Incidents</div>
-    <div class="metric-value" style="color:var(--speed);">50</div>
-    <div class="metric-delta up">+1 this week</div>
-  </div>
-  <div class="metric-card repeat">
-    <div class="metric-label">Repeat Offenders</div>
-    <div class="metric-value" style="color:var(--new-driver);">8</div>
-    <div class="metric-delta same">3+ incidents all-time</div>
-  </div>
-</div>
+  <!-- NEW THIS WEEK BANNER -->
+  <div class="new-banner">
+    <h2>⚠️ New This Week — 15–21 June 2026</h2>
+    <div class="new-cards">
 
-<!-- TABS -->
-<div class="tabs-container">
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('overview')">📊 Overview</button>
-    <button class="tab-btn" onclick="showTab('bydriver')">👤 By Driver</button>
-    <button class="tab-btn" onclick="showTab('incidentlog')">📋 Incident Log</button>
-    <button class="tab-btn" onclick="showTab('trend')">📈 Weekly Trend</button>
-  </div>
-
-  <!-- TAB 1: OVERVIEW -->
-  <div id="tab-overview" class="tab-content active">
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3>Incidents Per Driver (All Time)</h3>
-        <div class="chart-wrapper"><canvas id="driverBar"></canvas></div>
+      <div class="new-card speed">
+        <div class="driver-name">Unknown (Tawana Hershel Masiwa)</div>
+        <div class="vehicle">Man Truck CEY69471</div>
+        <div class="incidents">6 speedings at 85km/h+ · Week 3 of consecutive speedings</div>
+        <span class="badge escalation">⬆ ESCALATION</span>
       </div>
-      <div class="chart-card">
-        <h3>Transgression Type Split</h3>
-        <div class="chart-wrapper"><canvas id="donut"></canvas></div>
+
+      <div class="new-card">
+        <div class="driver-name">Lami</div>
+        <div class="vehicle">Opel Combo CEY34027</div>
+        <div class="incidents">5 late drives · 15–16 Jun, 23:49–02:29</div>
+        <span class="badge new-driver">NEW THIS WEEK</span>
+      </div>
+
+      <div class="new-card">
+        <div class="driver-name">Ricardo</div>
+        <div class="vehicle">Opel Combo CEY19309</div>
+        <div class="incidents">3 late drives · 17 Jun, 01:38–02:49</div>
+        <span class="badge repeat">REPEAT OFFENDER</span>
+      </div>
+
+      <div class="new-card">
+        <div class="driver-name">Sifiso</div>
+        <div class="vehicle">Nissan NP200 CEY19762</div>
+        <div class="incidents">1 late drive · 18 Jun, 00:10–00:58</div>
+        <span class="badge new-driver">NEW THIS WEEK</span>
+      </div>
+
+      <div class="new-card">
+        <div class="driver-name">Nico</div>
+        <div class="vehicle">Chev Utility CEY29293</div>
+        <div class="incidents">1 late drive · 21 Jun, 03:57–04:10</div>
+        <span class="badge new-driver">NEW THIS WEEK</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WEEK-ON-WEEK COMPARISON -->
+  <div class="wow-section">
+    <div class="card">
+      <h3>📊 Week-on-Week Summary (Last 3 Weeks)</h3>
+      <table class="wow-table">
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>Late</th>
+            <th>Speed</th>
+            <th>Total</th>
+            <th>vs Prev</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1–7 Jun</td>
+            <td>0</td>
+            <td>6</td>
+            <td>6</td>
+            <td class="down">↓ from 3</td>
+          </tr>
+          <tr>
+            <td>8–14 Jun</td>
+            <td>1</td>
+            <td>8</td>
+            <td>9</td>
+            <td class="up">↑ +3</td>
+          </tr>
+          <tr class="current">
+            <td><strong>15–21 Jun ★</strong></td>
+            <td><strong>10</strong></td>
+            <td><strong>6</strong></td>
+            <td><strong>16</strong></td>
+            <td class="up"><strong>↑ +7</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>🔍 Driver Changes This Week</h3>
+      <ul class="change-list">
+        <li><span class="dot red"></span><strong>Man Truck Unknown (Tawana):</strong> 6 speedings — 3rd consecutive week escalating</li>
+        <li><span class="dot amber"></span><strong>Lami (CEY34027):</strong> 5 late drives — new driver flagged this week</li>
+        <li><span class="dot amber"></span><strong>Ricardo (CEY19309):</strong> 3 late drives — recurring pattern, different vehicle</li>
+        <li><span class="dot amber"></span><strong>Sifiso (CEY19762):</strong> 1 late drive — new appearance</li>
+        <li><span class="dot purple"></span><strong>Nico (CEY29293):</strong> 1 late drive at 03:57 — extremely late, new flag</li>
+        <li><span class="dot green"></span><strong>Ricardo (CEY78059):</strong> No speeding incidents — improvement on Ford Ranger</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="value">143</div>
+      <div class="label">Total Incidents (All Time)</div>
+      <div class="delta up">+16 this week</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">75</div>
+      <div class="label">Late-Night Driving</div>
+      <div class="delta up">+10 this week</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">68</div>
+      <div class="label">Speeding (85km/h+)</div>
+      <div class="delta up">+6 this week</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">8</div>
+      <div class="label">Repeat Offenders</div>
+      <div class="delta up">+3 new this week</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="showTab('overview')">📈 Overview</button>
+      <button class="tab-btn" onclick="showTab('drivers')">👤 By Driver</button>
+      <button class="tab-btn" onclick="showTab('log')">📋 Incident Log</button>
+      <button class="tab-btn" onclick="showTab('trend')">📉 Weekly Trend</button>
+    </div>
+
+    <!-- TAB 1: OVERVIEW -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h4>Incidents by Driver — All Time (Stacked: Late / Speeding)</h4>
+          <canvas id="chartDrivers" height="110"></canvas>
+        </div>
+        <div class="chart-box">
+          <h4>Incident Type Split</h4>
+          <canvas id="chartDonut" height="200"></canvas>
+        </div>
+      </div>
+      <br>
+      <div class="chart-box">
+        <h4>Top 6 Vehicles by Total Incidents</h4>
+        <canvas id="chartVehicles" height="70"></canvas>
       </div>
     </div>
-    <div style="height:16px;"></div>
-    <div class="chart-card">
-      <h3>Top Vehicles by Incidents</h3>
-      <div class="chart-wrapper" style="height:200px;"><canvas id="vehicleBar"></canvas></div>
+
+    <!-- TAB 2: BY DRIVER -->
+    <div class="tab-content" id="tab-drivers">
+      <div style="overflow-x:auto;">
+      <table class="driver-table">
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Vehicle</th>
+            <th>Late</th>
+            <th>Speed</th>
+            <th>Total</th>
+            <th>Max Speed</th>
+            <th>Risk</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="high-risk">
+            <td><strong>Godwin</strong></td>
+            <td>Chev Utility CEY29293</td>
+            <td>22</td><td>0</td><td>22</td>
+            <td>—</td>
+            <td><span class="risk-badge high">HIGH</span></td>
+            <td></td>
+          </tr>
+          <tr class="high-risk">
+            <td><strong>Ricardo Krige</strong></td>
+            <td>Ford Ranger CEY78059 / Opel CEY19309</td>
+            <td>3</td><td>14</td><td>17</td>
+            <td>149 km/h</td>
+            <td><span class="risk-badge high">HIGH</span></td>
+            <td><span class="tag-changed">CHANGED</span></td>
+          </tr>
+          <tr class="high-risk">
+            <td><strong>Unknown (Tawana Hershel Masiwa)</strong></td>
+            <td>Man Truck CEY69471</td>
+            <td>0</td><td>19</td><td>19</td>
+            <td>85km/h+</td>
+            <td><span class="risk-badge high">HIGH</span></td>
+            <td><span class="tag-changed">CHANGED</span></td>
+          </tr>
+          <tr class="high-risk">
+            <td><strong>Ben</strong></td>
+            <td>Merc Actros CEY63155</td>
+            <td>0</td><td>10</td><td>10</td>
+            <td>85km/h+</td>
+            <td><span class="risk-badge high">HIGH</span></td>
+            <td></td>
+          </tr>
+          <tr class="medium-risk">
+            <td><strong>Nardino</strong></td>
+            <td>Nissan NP300 CEY11873</td>
+            <td>7</td><td>5</td><td>12</td>
+            <td>—</td>
+            <td><span class="risk-badge high">HIGH</span></td>
+            <td></td>
+          </tr>
+          <tr class="medium-risk">
+            <td><strong>Headman</strong></td>
+            <td>Chev Utility CEY22432</td>
+            <td>7</td><td>0</td><td>7</td>
+            <td>—</td>
+            <td><span class="risk-badge medium">MEDIUM</span></td>
+            <td></td>
+          </tr>
+          <tr class="medium-risk">
+            <td><strong>Lami</strong></td>
+            <td>Opel Combo CEY34027</td>
+            <td>5</td><td>0</td><td>5</td>
+            <td>—</td>
+            <td><span class="risk-badge medium">MEDIUM</span></td>
+            <td><span class="tag-new">NEW</span></td>
+          </tr>
+          <tr>
+            <td><strong>Marius Gerber</strong></td>
+            <td>Kia K2700 CEY57306 / Mitsubishi CEY74727</td>
+            <td>2</td><td>3</td><td>5</td>
+            <td>130 km/h</td>
+            <td><span class="risk-badge medium">MEDIUM</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Randal</strong></td>
+            <td>Isuzu KB300 CEY71650</td>
+            <td>5</td><td>0</td><td>5</td>
+            <td>—</td>
+            <td><span class="risk-badge medium">MEDIUM</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Siyabonga</strong></td>
+            <td>Ford Ranger CEY78059 / CEY19762</td>
+            <td>3</td><td>0</td><td>3</td>
+            <td>—</td>
+            <td><span class="risk-badge low">LOW</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Edgar</strong></td>
+            <td>Nissan UD440 CEY69850</td>
+            <td>0</td><td>2</td><td>2</td>
+            <td>85km/h+</td>
+            <td><span class="risk-badge low">LOW</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Siseko</strong></td>
+            <td>Opel Combo CEY34027</td>
+            <td>2</td><td>0</td><td>2</td>
+            <td>—</td>
+            <td><span class="risk-badge low">LOW</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Sifiso</strong></td>
+            <td>Nissan NP200 CEY19762</td>
+            <td>1</td><td>0</td><td>1</td>
+            <td>—</td>
+            <td><span class="risk-badge low">LOW</span></td>
+            <td><span class="tag-new">NEW</span></td>
+          </tr>
+          <tr>
+            <td><strong>Nico</strong></td>
+            <td>Chev Utility CEY29293</td>
+            <td>1</td><td>0</td><td>1</td>
+            <td>—</td>
+            <td><span class="risk-badge low">LOW</span></td>
+            <td><span class="tag-new">NEW</span></td>
+          </tr>
+          <tr>
+            <td><strong>Shal</strong></td>
+            <td>Nissan NP300 CEY11873</td>
+            <td>1</td><td>0</td><td>1</td>
+            <td>—</td>
+            <td><span class="risk-badge low">LOW</span></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
     </div>
-  </div>
 
-  <!-- TAB 2: BY DRIVER -->
-  <div id="tab-bydriver" class="tab-content">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Driver</th>
-          <th>Vehicle</th>
-          <th>Late Night</th>
-          <th>Speeding</th>
-          <th>Total</th>
-          <th>Max Speed</th>
-          <th>Risk</th>
-          <th>This Week</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="high-risk">
-          <td><strong>Godwin</strong></td>
-          <td>Chev Utility CEY29293</td>
-          <td>22</td>
-          <td>0</td>
-          <td>22</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-high">High</span></td>
-          <td>—</td>
-        </tr>
-        <tr class="high-risk">
-          <td><strong>Ricardo Krige</strong></td>
-          <td>Ford Ranger CEY78059</td>
-          <td>1</td>
-          <td>12</td>
-          <td>13</td>
-          <td style="color:var(--speed);font-weight:700;">149 km/h</td>
-          <td><span class="risk-badge risk-high">High</span></td>
-          <td><span class="badge escalation">↑ Escalation</span></td>
-        </tr>
-        <tr class="high-risk">
-          <td><strong>Ben</strong></td>
-          <td>Merc Actros CEY63155</td>
-          <td>0</td>
-          <td>10</td>
-          <td>10</td>
-          <td>85+ km/h</td>
-          <td><span class="risk-badge risk-high">High</span></td>
-          <td>—</td>
-        </tr>
-        <tr class="high-risk">
-          <td><strong>Unknown</strong></td>
-          <td>Man Truck CEY69471</td>
-          <td>0</td>
-          <td>10</td>
-          <td>10</td>
-          <td>85+ km/h</td>
-          <td><span class="risk-badge risk-high">High</span></td>
-          <td>—</td>
-        </tr>
-        <tr class="high-risk">
-          <td><strong>Nardino</strong></td>
-          <td>Nissan NP300 CEY11873</td>
-          <td>7</td>
-          <td>5</td>
-          <td>12</td>
-          <td style="color:var(--speed);font-weight:700;">134 km/h</td>
-          <td><span class="risk-badge risk-high">High</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Headman</strong></td>
-          <td>Chev Utility CEY22432</td>
-          <td>7</td>
-          <td>0</td>
-          <td>7</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-medium">Medium</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Siseko</strong></td>
-          <td>Nissan NP200 CEY19762</td>
-          <td>6</td>
-          <td>0</td>
-          <td>6</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-medium">Medium</span></td>
-          <td><span class="badge repeat">Active</span></td>
-        </tr>
-        <tr>
-          <td><strong>Marius / Marius Gerber</strong></td>
-          <td>Mitsubishi Triton CEY74727 / Kia K2700 CEY57306</td>
-          <td>2</td>
-          <td>2</td>
-          <td>4</td>
-          <td>130 km/h</td>
-          <td><span class="risk-badge risk-medium">Medium</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Ricardo Govender</strong></td>
-          <td>VW Touran CEY63250</td>
-          <td>3</td>
-          <td>0</td>
-          <td>3</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td><span class="badge repeat">Active</span></td>
-        </tr>
-        <tr>
-          <td><strong>Randal</strong></td>
-          <td>Isuzu KB300 CEY71650 / Merc Vito CEY13038</td>
-          <td>3</td>
-          <td>0</td>
-          <td>3</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Siyabonga</strong></td>
-          <td>Ford Ranger CEY78059</td>
-          <td>2</td>
-          <td>0</td>
-          <td>2</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Lovemore</strong></td>
-          <td>Isuzu F1400 CEY28255</td>
-          <td>0</td>
-          <td>2</td>
-          <td>2</td>
-          <td>85+ km/h</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Atwell</strong></td>
-          <td>Isuzu KB300 CEY71650</td>
-          <td>2</td>
-          <td>0</td>
-          <td>2</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Edgar</strong></td>
-          <td>Nissan UD440 CEY69850</td>
-          <td>0</td>
-          <td>1</td>
-          <td>1</td>
-          <td>85+ km/h</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Riaa</strong></td>
-          <td>Isuzu KB240 CEY76290</td>
-          <td>1</td>
-          <td>0</td>
-          <td>1</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Shaquill</strong><span class="tag-new">NEW</span></td>
-          <td>Merc Vito CEY13038</td>
-          <td>1</td>
-          <td>0</td>
-          <td>1</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td><span class="badge new-driver">New Driver</span></td>
-        </tr>
-        <tr>
-          <td><strong>Shal</strong></td>
-          <td>Nissan NP300 CEY11873</td>
-          <td>1</td>
-          <td>0</td>
-          <td>1</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Siseko (Opel)</strong></td>
-          <td>Opel Combo CEY34027</td>
-          <td>2</td>
-          <td>0</td>
-          <td>2</td>
-          <td>—</td>
-          <td><span class="risk-badge risk-low">Low</span></td>
-          <td>—</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- TAB 3: INCIDENT LOG -->
-  <div id="tab-incidentlog" class="tab-content">
-    <div class="log-filters">
-      <button class="filter-btn active" onclick="filterLog('all', this)">All</button>
-      <button class="filter-btn" onclick="filterLog('speed', this)">🚨 Speeding</button>
-      <button class="filter-btn" onclick="filterLog('late', this)">🌙 Late Night</button>
-      <button class="filter-btn" onclick="filterLog('new', this)">⭐ This Week</button>
+    <!-- TAB 3: INCIDENT LOG -->
+    <div class="tab-content" id="tab-log">
+      <div class="filter-row">
+        <select id="filterType" onchange="filterLog()">
+          <option value="">All Types</option>
+          <option value="speed">Speeding</option>
+          <option value="late">Late Night</option>
+        </select>
+        <select id="filterDriver" onchange="filterLog()">
+          <option value="">All Drivers</option>
+          <option value="Unknown">Unknown (Tawana)</option>
+          <option value="Lami">Lami</option>
+          <option value="Ricardo">Ricardo</option>
+          <option value="Nico">Nico</option>
+          <option value="Sifiso">Sifiso</option>
+          <option value="Godwin">Godwin</option>
+          <option value="Ben">Ben</option>
+          <option value="Nardino">Nardino</option>
+          <option value="Headman">Headman</option>
+          <option value="Marius">Marius Gerber</option>
+          <option value="Randal">Randal</option>
+          <option value="Siyabonga">Siyabonga</option>
+          <option value="Edgar">Edgar</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto; max-height: 520px; overflow-y: auto;">
+      <table class="incident-table" id="incidentTable">
+        <thead>
+          <tr>
+            <th>Date</th><th>Driver</th><th>Type</th><th>Detail</th><th>Vehicle</th><th>Week</th>
+          </tr>
+        </thead>
+        <tbody id="incidentBody">
+        </tbody>
+      </table>
+      </div>
     </div>
-    <table class="incident-table" id="incidentTable">
-      <thead>
-        <tr>
-          <th>Week</th>
-          <th>Date</th>
-          <th>Driver</th>
-          <th>Vehicle</th>
-          <th>Type</th>
-          <th>Detail</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- NEW WEEK -->
-        <tr data-type="speed" data-new="true">
-          <td>25–31 May 2026</td><td>27/5</td><td><strong>Ricardo Krige</strong></td><td>Ford Ranger CEY78059</td>
-          <td><span class="type-badge type-speed">Speeding</span></td><td>149 km/h — new peak</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
-        <tr data-type="late" data-new="true">
-          <td>25–31 May 2026</td><td>25/5</td><td>Siseko</td><td>Nissan NP200 CEY19762</td>
-          <td><span class="type-badge type-late">Late Night</span></td><td>23:11–23:31</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
-        <tr data-type="late" data-new="true">
-          <td>25–31 May 2026</td><td>25/5</td><td>Siseko</td><td>Nissan NP200 CEY19762</td>
-          <td><span class="type-badge type-late">Late Night</span></td><td>23:34–23:38</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
-        <tr data-type="late" data-new="true">
-          <td>25–31 May 2026</td><td>26/5</td><td>Siseko</td><td>Nissan NP200 CEY19762</td>
-          <td><span class="type-badge type-late">Late Night</span></td><td>01:11–01:22</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
-        <tr data-type="late" data-new="true">
-          <td>25–31 May 2026</td><td>25/5</td><td>Ricardo Govender</td><td>VW Touran CEY63250</td>
-          <td><span class="type-badge type-late">Late Night</span></td><td>22:08–22:20</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
-        <tr data-type="late" data-new="true">
-          <td>25–31 May 2026</td><td>27/5</td><td>Ricardo Govender</td><td>VW Touran CEY63250</td>
-          <td><span class="type-badge type-late">Late Night</span></td><td>23:10–23:33</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
-        <tr data-type="late" data-new="true">
-          <td>25–31 May 2026</td><td>27/5</td><td>Shaquill</td><td>Merc Vito CEY13038</td>
-          <td><span class="type-badge type-late">Late Night</span></td><td>23:33–23:58</td>
-          <td><span class="new-week-badge">NEW</span></td>
-        </tr>
 
-        <!-- 11–17 May -->
-        <tr data-type="late"><td>11–17 May 2026</td><td>12/5</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>22:19–22:32</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>12/5</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>23:48–00:11</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>13/5</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>00:15–00:18</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>13/5</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>00:22–00:45</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>13/5</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>00:52–00:59</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>16/5</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>132 km/h</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>16/5</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>136 km/h</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>11/5</td><td>Riaa</td><td>Isuzu KB240 CEY76290</td><td><span class="type-badge type-late">Late Night</span></td><td>22:12–22:40</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>week</td><td>Unknown</td><td>Man Truck CEY69471</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>week</td><td>Ben</td><td>Merc Actros CEY63155</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h ×5</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>16/5</td><td>Randal</td><td>Merc Vito CEY13038</td><td><span class="type-badge type-late">Late Night</span></td><td>22:08–22:59</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>14/5</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-late">Late Night</span></td><td>01:44–01:50</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>14/5</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-late">Late Night</span></td><td>01:50–02:18</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>14/5</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-speed">Speeding</span></td><td>131 km/h</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>14/5</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-late">Late Night</span></td><td>02:18–03:57</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>15/5</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-speed">Speeding</span></td><td>134 km/h</td><td></td></tr>
-        <tr data-type="speed"><td>11–17 May 2026</td><td>week</td><td>Edgar</td><td>Nissan UD440 CEY69850</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h</td><td></td></tr>
-        <tr data-type="late"><td>11–17 May 2026</td><td>13/5</td><td>Ricardo Govender</td><td>VW Touran CEY63250</td><td><span class="type-badge type-late">Late Night</span></td><td>23:38–23:54</td><td></td></tr>
-
-        <!-- 4–10 May -->
-        <tr data-type="speed"><td>4–10 May 2026</td><td>week</td><td>Ben</td><td>Merc Actros CEY63155</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h ×4</td><td></td></tr>
-        <tr data-type="speed"><td>4–10 May 2026</td><td>week</td><td>Marius</td><td>Mitsubishi Triton CEY74727</td><td><span class="type-badge type-speed">Speeding</span></td><td>130 km/h</td><td></td></tr>
-
-        <!-- 27 Apr–3 May -->
-        <tr data-type="speed"><td>27 Apr–3 May 2026</td><td>30/4</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>133 km/h</td><td></td></tr>
-        <tr data-type="speed"><td>27 Apr–3 May 2026</td><td>2/5</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>131 km/h</td><td></td></tr>
-        <tr data-type="speed"><td>27 Apr–3 May 2026</td><td>week</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h</td><td></td></tr>
-
-        <!-- 20–26 Apr -->
-        <tr data-type="late"><td>20–26 Apr 2026</td><td>25/4</td><td>Marius Gerber</td><td>Kia K2700 CEY57306</td><td><span class="type-badge type-late">Late Night</span></td><td>23:32–23:53</td><td></td></tr>
-        <tr data-type="late"><td>20–26 Apr 2026</td><td>26/4</td><td>Marius Gerber</td><td>Kia K2700 CEY57306</td><td><span class="type-badge type-late">Late Night</span></td><td>00:30–00:36</td><td></td></tr>
-
-        <!-- 13–19 Apr -->
-        <tr data-type="speed"><td>13–19 Apr 2026</td><td>13/4</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>131 km/h</td><td></td></tr>
-        <tr data-type="speed"><td>13–19 Apr 2026</td><td>18/4</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>133 km/h</td><td></td></tr>
-
-        <!-- Earlier (from previous dashboard data) -->
-        <tr data-type="speed"><td>22 May 2026</td><td>22/5</td><td>Ricardo Krige</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-speed">Speeding</span></td><td>139 km/h</td><td></td></tr>
-
-        <!-- Historical Sep 2025 -->
-        <tr data-type="late"><td>1–7 Sep 2025</td><td>3/9</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>22:16–23:01</td><td></td></tr>
-        <tr data-type="late"><td>8–14 Sep 2025</td><td>13/9</td><td>Siyabonga</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-late">Late Night</span></td><td>23:00–23:25</td><td></td></tr>
-        <tr data-type="late"><td>25–31 Aug 2025</td><td>29/8</td><td>Randal</td><td>Isuzu KB300 CEY71650</td><td><span class="type-badge type-late">Late Night</span></td><td>22:45–22:48</td><td></td></tr>
-        <tr data-type="late"><td>11–17 Aug 2025</td><td>12/8</td><td>Shal</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-late">Late Night</span></td><td>22:39–22:53</td><td></td></tr>
-        <tr data-type="late"><td>4–10 Aug 2025</td><td>10/8</td><td>Headman</td><td>Chev Utility CEY22432</td><td><span class="type-badge type-late">Late Night</span></td><td>22:20–22:23</td><td></td></tr>
-        <tr data-type="late"><td>28 Jul–3 Aug 2025</td><td>3/8</td><td>Godwin</td><td>Chev Utility CEY29293</td><td><span class="type-badge type-late">Late Night</span></td><td>23:46–23:49</td><td></td></tr>
-        <tr data-type="late"><td>14–20 Jul 2025</td><td>15/7</td><td>Headman</td><td>Chev Utility CEY22432</td><td><span class="type-badge type-late">Late Night</span></td><td>00:21–00:57</td><td></td></tr>
-        <tr data-type="late"><td>14–20 Jul 2025</td><td>20/7</td><td>Headman</td><td>Chev Utility CEY22432</td><td><span class="type-badge type-late">Late Night</span></td><td>00:01–00:47</td><td></td></tr>
-        <tr data-type="late"><td>30 Jun–6 Jul 2025</td><td>1/7</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-late">Late Night</span></td><td>22:29–22:48</td><td></td></tr>
-        <tr data-type="late"><td>30 Jun–6 Jul 2025</td><td>3/7</td><td>Nardino</td><td>Nissan NP300 CEY11873</td><td><span class="type-badge type-late">Late Night</span></td><td>02:07–02:32</td><td></td></tr>
-        <tr data-type="late"><td>16–22 Jun 2025</td><td>19/6</td><td>Godwin</td><td>Chev Utility CEY22432</td><td><span class="type-badge type-late">Late Night</span></td><td>22:46–22:47</td><td></td></tr>
-        <tr data-type="speed"><td>16–22 Jun 2025</td><td>week</td><td>Lovemore</td><td>Isuzu F1400 CEY28255</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h</td><td></td></tr>
-        <tr data-type="late"><td>9–15 Jun 2025</td><td>15/6</td><td>Atwell</td><td>Isuzu KB300 CEY71650</td><td><span class="type-badge type-late">Late Night</span></td><td>00:50–01:18</td><td></td></tr>
-        <tr data-type="late"><td>9–15 Jun 2025</td><td>15/6</td><td>Atwell</td><td>Isuzu KB300 CEY71650</td><td><span class="type-badge type-late">Late Night</span></td><td>22:50–22:57</td><td></td></tr>
-        <tr data-type="late"><td>23–29 Jun 2025</td><td>29/6</td><td>Siyabonga</td><td>Ford Ranger CEY78059</td><td><span class="type-badge type-late">Late Night</span></td><td>22:01–22:26</td><td></td></tr>
-        <tr data-type="speed"><td>2–8 Jun 2025</td><td>week</td><td>Lovemore</td><td>Isuzu F100 CEY28255</td><td><span class="type-badge type-speed">Speeding</span></td><td>85+ km/h ×2</td><td></td></tr>
-        <tr data-type="late"><td>7–13 Jul 2025</td><td>12/7</td><td>Siseko</td><td>Opel Combo CEY34027</td><td><span class="type-badge type-late">Late Night</span></td><td>22:06–22:22</td><td></td></tr>
-        <tr data-type="late"><td>7–13 Jul 2025</td><td>12/7</td><td>Siseko</td><td>Opel Combo CEY34027</td><td><span class="type-badge type-late">Late Night</span></td><td>22:25–23:11</td><td></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- TAB 4: WEEKLY TREND -->
-  <div id="tab-trend" class="tab-content">
-    <div class="chart-card">
-      <h3>Weekly Incidents — Full History (Named Transgressions)</h3>
-      <div class="chart-wrapper" style="height:320px;"><canvas id="trendLine"></canvas></div>
+    <!-- TAB 4: WEEKLY TREND -->
+    <div class="tab-content" id="tab-trend">
+      <div class="trend-wrap">
+        <div class="chart-box">
+          <h4>Weekly Incident Counts — Full History (Speeding vs Late Night)</h4>
+          <canvas id="chartTrend" height="100"></canvas>
+        </div>
+      </div>
     </div>
-  </div>
 
-</div>
+  </div><!-- end tabs -->
 
-<!-- FOOTER -->
+</div><!-- end container -->
+
 <div class="footer">
-  Sustainable Heating &nbsp;·&nbsp; Vehicle Transgressions Dashboard &nbsp;·&nbsp; Generated by Jarvis &nbsp;·&nbsp; 1 June 2026 &nbsp;·&nbsp; <strong>Confidential — EXCO Distribution</strong>
+  Sustainable Heating · Vehicle Transgressions Dashboard · Generated by Jarvis · 24 June 2026 · Confidential — EXCO Distribution
+  <br>Dashboard URL: <a href="https://sdramat.github.io/sh-fleet-dashboard/" style="color:#2E75B6;">https://sdramat.github.io/sh-fleet-dashboard/</a>
 </div>
 
 <script>
-// TAB SWITCHING
-function showTab(tab) {
+// ===================== DATA =====================
+
+const incidents = [
+  // WEEK 15-21 Jun 2026 (NEW)
+  { date: "21 Jun 2026", driver: "Nico", type: "late", detail: "03:57–04:10", vehicle: "Chev Utility CEY29293", week: "15–21 Jun 2026", isNew: true },
+  { date: "18 Jun 2026", driver: "Sifiso", type: "late", detail: "00:10–00:58", vehicle: "Nissan NP200 CEY19762", week: "15–21 Jun 2026", isNew: true },
+  { date: "17 Jun 2026", driver: "Ricardo", type: "late", detail: "01:38–02:05", vehicle: "Opel Combo CEY19309", week: "15–21 Jun 2026", isNew: true },
+  { date: "17 Jun 2026", driver: "Ricardo", type: "late", detail: "02:07–02:27", vehicle: "Opel Combo CEY19309", week: "15–21 Jun 2026", isNew: true },
+  { date: "17 Jun 2026", driver: "Ricardo", type: "late", detail: "02:31–02:49", vehicle: "Opel Combo CEY19309", week: "15–21 Jun 2026", isNew: true },
+  { date: "15–16 Jun 2026", driver: "Lami", type: "late", detail: "23:49–00:13", vehicle: "Opel Combo CEY34027", week: "15–21 Jun 2026", isNew: true },
+  { date: "16 Jun 2026", driver: "Lami", type: "late", detail: "00:43–01:14", vehicle: "Opel Combo CEY34027", week: "15–21 Jun 2026", isNew: true },
+  { date: "16 Jun 2026", driver: "Lami", type: "late", detail: "01:24–01:25", vehicle: "Opel Combo CEY34027", week: "15–21 Jun 2026", isNew: true },
+  { date: "16 Jun 2026", driver: "Lami", type: "late", detail: "01:31–01:53", vehicle: "Opel Combo CEY34027", week: "15–21 Jun 2026", isNew: true },
+  { date: "16 Jun 2026", driver: "Lami", type: "late", detail: "02:07–02:29", vehicle: "Opel Combo CEY34027", week: "15–21 Jun 2026", isNew: true },
+  { date: "15–21 Jun 2026", driver: "Unknown (Tawana)", type: "speed", detail: "6× 85km/h+", vehicle: "Man Truck CEY69471", week: "15–21 Jun 2026", isNew: true },
+  // WEEK 8-14 Jun 2026
+  { date: "9 Jun 2026", driver: "Ricardo", type: "late", detail: "23:15–23:30", vehicle: "VW Touran CEY63250", week: "8–14 Jun 2026", isNew: false },
+  { date: "8–14 Jun 2026", driver: "Unknown (Tawana)", type: "speed", detail: "8× 85km/h+", vehicle: "Man Truck CEY69471", week: "8–14 Jun 2026", isNew: false },
+  // WEEK 1-7 Jun 2026
+  { date: "1–7 Jun 2026", driver: "Unknown (Tawana)", type: "speed", detail: "5× 85km/h+", vehicle: "Man Truck CEY69471", week: "1–7 Jun 2026", isNew: false },
+  { date: "1–7 Jun 2026", driver: "Edgar", type: "speed", detail: "85km/h+", vehicle: "Nissan UD440 CEY69850", week: "1–7 Jun 2026", isNew: false },
+  // WEEK 25-31 May 2026
+  { date: "27 May 2026", driver: "Ricardo Krige", type: "speed", detail: "149 km/h", vehicle: "Ford Ranger CEY78059", week: "25–31 May 2026", isNew: false },
+  { date: "27 May 2026", driver: "Ricardo", type: "late", detail: "23:33–23:58", vehicle: "Merc Vito CEY13038", week: "25–31 May 2026", isNew: false },
+  // WEEK 12-18 May 2026
+  { date: "12 May 2026", driver: "Godwin", type: "late", detail: "22:19–22:32", vehicle: "Chev Utility CEY29293", week: "11–18 May 2026", isNew: false },
+  { date: "12 May 2026", driver: "Godwin", type: "late", detail: "23:48–00:11", vehicle: "Chev Utility CEY29293", week: "11–18 May 2026", isNew: false },
+  { date: "12 May 2026", driver: "Unknown (Tawana)", type: "speed", detail: "85km/h+", vehicle: "Man Truck CEY69471", week: "11–18 May 2026", isNew: false },
+  // WEEK 4-10 May 2026
+  { date: "4–10 May 2026", driver: "Ben", type: "speed", detail: "4× 85km/h+", vehicle: "Merc Actros CEY63155", week: "4–10 May 2026", isNew: false },
+  { date: "4–10 May 2026", driver: "Marius Gerber", type: "speed", detail: "130 km/h", vehicle: "Mitsubishi Triton CEY74727", week: "4–10 May 2026", isNew: false },
+  // WEEK 27 Apr-3 May
+  { date: "30 Apr 2026", driver: "Ricardo Krige", type: "speed", detail: "133 km/h", vehicle: "Ford Ranger CEY78059", week: "27 Apr–3 May 2026", isNew: false },
+  { date: "2 May 2026", driver: "Ricardo Krige", type: "speed", detail: "131 km/h", vehicle: "Ford Ranger CEY78059", week: "27 Apr–3 May 2026", isNew: false },
+  // WEEK 20-26 Apr
+  { date: "25 Apr 2026", driver: "Marius Gerber", type: "late", detail: "23:32–23:53", vehicle: "Kia K2700 CEY57306", week: "20–26 Apr 2026", isNew: false },
+  { date: "26 Apr 2026", driver: "Marius Gerber", type: "late", detail: "00:30–00:36", vehicle: "Kia K2700 CEY57306", week: "20–26 Apr 2026", isNew: false },
+  // WEEK 13-19 Apr
+  { date: "13 Apr 2026", driver: "Ricardo Krige", type: "speed", detail: "131 km/h", vehicle: "Ford Ranger CEY78059", week: "13–19 Apr 2026", isNew: false },
+  { date: "18 Apr 2026", driver: "Ricardo Krige", type: "speed", detail: "133 km/h", vehicle: "Ford Ranger CEY78059", week: "13–19 Apr 2026", isNew: false },
+  // Sep 2025 entries
+  { date: "13 Sep 2025", driver: "Siyabonga", type: "late", detail: "23:00–23:25", vehicle: "Ford Ranger CEY78059", week: "8–14 Sep 2025", isNew: false },
+  { date: "3 Sep 2025", driver: "Godwin", type: "late", detail: "22:16–23:01", vehicle: "Chev Utility CEY29293", week: "1–7 Sep 2025", isNew: false },
+  { date: "3 Sep 2025", driver: "Ricardo Krige", type: "late", detail: "23:04–23:09", vehicle: "Chev Utility CEY29293", week: "1–7 Sep 2025", isNew: false },
+  // Aug 2025 entries
+  { date: "29 Aug 2025", driver: "Randal", type: "late", detail: "22:45–22:48", vehicle: "Isuzu KB300 CEY71650", week: "25–31 Aug 2025", isNew: false },
+  { date: "30 Aug 2025", driver: "Randal", type: "late", detail: "01:24–01:30", vehicle: "Isuzu KB300 CEY71650", week: "25–31 Aug 2025", isNew: false },
+  { date: "12 Aug 2025", driver: "Shal", type: "late", detail: "22:39–22:53", vehicle: "Nissan NP300 CEY11873", week: "11–17 Aug 2025", isNew: false },
+  { date: "10 Aug 2025", driver: "Headman", type: "late", detail: "22:20–22:23", vehicle: "Chev Utility CEY22432", week: "4–10 Aug 2025", isNew: false },
+  { date: "4 Aug 2025", driver: "Godwin", type: "late", detail: "00:00–00:36", vehicle: "Chev Utility CEY29293", week: "4–10 Aug 2025", isNew: false },
+  { date: "3 Aug 2025", driver: "Godwin", type: "late", detail: "23:46–23:49", vehicle: "Chev Utility CEY29293", week: "28 Jul–3 Aug 2025", isNew: false },
+  { date: "3 Aug 2025", driver: "Godwin", type: "late", detail: "23:58–23:59", vehicle: "Chev Utility CEY29293", week: "28 Jul–3 Aug 2025", isNew: false },
+  // Jul 2025
+  { date: "22 Jul 2025", driver: "Godwin", type: "late", detail: "22:28–23:13 (3 trips)", vehicle: "Chev Utility CEY29293", week: "21–27 Jul 2025", isNew: false },
+  { date: "15 Jul 2025", driver: "Headman", type: "late", detail: "00:21–00:57", vehicle: "Chev Utility CEY22432", week: "14–20 Jul 2025", isNew: false },
+  { date: "20 Jul 2025", driver: "Headman", type: "late", detail: "00:01–00:47", vehicle: "Chev Utility CEY22432", week: "14–20 Jul 2025", isNew: false },
+  { date: "12 Jul 2025", driver: "Siseko", type: "late", detail: "22:06–23:11 (2 trips)", vehicle: "Opel Combo CEY34027", week: "7–13 Jul 2025", isNew: false },
+  // Jun 2025
+  { date: "1 Jul 2025", driver: "Nardino", type: "late", detail: "22:29–22:48", vehicle: "Nissan NP300 CEY11873", week: "30 Jun–6 Jul 2025", isNew: false },
+  { date: "3 Jul 2025", driver: "Nardino", type: "late", detail: "02:07–02:32", vehicle: "Nissan NP300 CEY11873", week: "30 Jun–6 Jul 2025", isNew: false },
+  { date: "29 Jun 2025", driver: "Siyabonga", type: "late", detail: "22:01–23:00 (2 trips)", vehicle: "Ford Ranger CEY78059", week: "23–29 Jun 2025", isNew: false },
+  // Additional Nardino/Ben history
+  { date: "Various 2025", driver: "Nardino", type: "speed", detail: "5× 85km/h+", vehicle: "Nissan NP300 CEY11873", week: "Jul–Sep 2025", isNew: false },
+  { date: "Various 2025", driver: "Nardino", type: "late", detail: "5× after 22:00", vehicle: "Nissan NP300 CEY11873", week: "Jul–Sep 2025", isNew: false },
+  { date: "Various 2025", driver: "Ben", type: "speed", detail: "6× 85km/h+", vehicle: "Merc Actros CEY63155", week: "Aug–Oct 2025", isNew: false },
+  { date: "Various 2025", driver: "Godwin", type: "late", detail: "16× after 22:00", vehicle: "Chev Utility CEY29293", week: "Jul–Nov 2025", isNew: false },
+  { date: "Various 2025-26", driver: "Headman", type: "late", detail: "5× after 22:00", vehicle: "Chev Utility CEY22432", week: "Aug–Nov 2025", isNew: false },
+  { date: "Various 2025-26", driver: "Ricardo Krige", type: "speed", detail: "4× 85km/h+", vehicle: "Ford Ranger CEY78059", week: "Sep–Dec 2025", isNew: false },
+  { date: "22 May 2026", driver: "Ricardo Krige", type: "speed", detail: "139 km/h", vehicle: "Ford Ranger CEY78059", week: "18–24 May 2026", isNew: false },
+  { date: "Various 2026", driver: "Unknown (Tawana)", type: "speed", detail: "5× 85km/h+ (Mar–May)", vehicle: "Man Truck CEY69471", week: "Mar–May 2026", isNew: false },
+  { date: "Various 2025", driver: "Randal", type: "late", detail: "3× after 22:00", vehicle: "Isuzu KB300 CEY71650", week: "Aug–Sep 2025", isNew: false },
+];
+
+// ===================== POPULATE INCIDENT LOG =====================
+function populateLog(data) {
+  const tbody = document.getElementById('incidentBody');
+  tbody.innerHTML = '';
+  data.forEach(inc => {
+    const tr = document.createElement('tr');
+    if (inc.isNew) tr.classList.add('new-incident');
+    tr.setAttribute('data-type', inc.type);
+    tr.setAttribute('data-driver', inc.driver);
+    tr.innerHTML = [
+      '<td>' + inc.date + '</td>',
+      '<td>' + inc.driver + '</td>',
+      '<td><span class="type-badge ' + inc.type + '">' + (inc.type === 'speed' ? 'Speeding' : 'Late Night') + '</span></td>',
+      '<td>' + inc.detail + (inc.isNew ? '<span class="new-incident-badge">NEW</span>' : '') + '</td>',
+      '<td>' + inc.vehicle + '</td>',
+      '<td>' + inc.week + '</td>',
+    ].join('');
+    tbody.appendChild(tr);
+  });
+}
+populateLog(incidents);
+
+function filterLog() {
+  const type = document.getElementById('filterType').value;
+  const driver = document.getElementById('filterDriver').value;
+  const filtered = incidents.filter(i => {
+    if (type && i.type !== type) return false;
+    if (driver && !i.driver.includes(driver)) return false;
+    return true;
+  });
+  populateLog(filtered);
+}
+
+// ===================== TAB SWITCHING =====================
+function showTab(id) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
   event.target.classList.add('active');
 }
 
-// INCIDENT LOG FILTER
-function filterLog(type, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('#incidentTable tbody tr').forEach(row => {
-    if (type === 'all') row.style.display = '';
-    else if (type === 'new') row.style.display = row.dataset.new === 'true' ? '' : 'none';
-    else row.style.display = row.dataset.type === type ? '' : 'none';
-  });
-}
+// ===================== CHARTS =====================
 
-// CHART.JS CHARTS
-const speedColor = '#E24B4A';
-const lateColor = '#EF9F27';
-const vehicleColor = '#378ADD';
+// Driver stacked bar
+const driverLabels = ['Unknown (Tawana)', 'Godwin', 'Ricardo Krige', 'Nardino', 'Ben', 'Headman', 'Lami', 'Marius', 'Randal', 'Siyabonga', 'Siseko', 'Sifiso', 'Nico', 'Edgar', 'Shal'];
+const lateData =    [0,  22,  3,  7, 0, 7, 5, 2, 5, 3, 2, 1, 1, 0, 1];
+const speedData =   [19,  0, 14,  5, 10, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0];
 
-// Driver Bar Chart
-new Chart(document.getElementById('driverBar'), {
+new Chart(document.getElementById('chartDrivers'), {
   type: 'bar',
   data: {
-    labels: ['Godwin', 'Ricardo Krige', 'Nardino', 'Ben', 'Unknown\n(Man Truck)', 'Headman', 'Siseko', 'Marius'],
+    labels: driverLabels,
     datasets: [
-      { label: 'Late Night', data: [22, 1, 7, 0, 0, 7, 6, 2], backgroundColor: lateColor },
-      { label: 'Speeding', data: [0, 12, 5, 10, 10, 0, 0, 2], backgroundColor: speedColor }
+      { label: 'Late Night', data: lateData, backgroundColor: '#EF9F27', borderRadius: 2 },
+      { label: 'Speeding', data: speedData, backgroundColor: '#E24B4A', borderRadius: 2 },
     ]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
-    scales: { x: { stacked: true, ticks: { font: { size: 11 } } }, y: { stacked: true, beginAtZero: true } }
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { stacked: true, ticks: { font: { size: 11 } } },
+      y: { stacked: true, beginAtZero: true }
+    }
   }
 });
 
-// Donut Chart
-new Chart(document.getElementById('donut'), {
+// Donut
+const totalLate = lateData.reduce((a,b) => a+b, 0);
+const totalSpeed = speedData.reduce((a,b) => a+b, 0);
+new Chart(document.getElementById('chartDonut'), {
   type: 'doughnut',
   data: {
-    labels: ['Late Night (58)', 'Speeding (50)'],
-    datasets: [{ data: [58, 50], backgroundColor: [lateColor, speedColor], borderWidth: 2 }]
+    labels: ['Late Night (' + totalLate + ')', 'Speeding (' + totalSpeed + ')'],
+    datasets: [{ data: [totalLate, totalSpeed], backgroundColor: ['#EF9F27', '#E24B4A'], borderWidth: 2 }]
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } }
-  }
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
 });
 
-// Vehicle Bar Chart
-new Chart(document.getElementById('vehicleBar'), {
+// Vehicle bar
+new Chart(document.getElementById('chartVehicles'), {
   type: 'bar',
   data: {
-    labels: ['CEY29293\nGodwin', 'CEY78059\nRicardo K', 'CEY11873\nNardino', 'CEY63155\nBen', 'CEY69471\nUnknown', 'CEY22432\nHeadman'],
+    labels: ['Chev Util. CEY29293', 'Man Truck CEY69471', 'Ford Ranger CEY78059', 'Merc Actros CEY63155', 'NP300 CEY11873', 'Chev Util. CEY22432'],
     datasets: [{
-      label: 'Incidents',
-      data: [22, 13, 12, 10, 10, 7],
-      backgroundColor: [lateColor, speedColor, '#7c3aed', speedColor, speedColor, lateColor]
+      label: 'Total Incidents',
+      data: [23, 19, 17, 10, 12, 7],
+      backgroundColor: '#378ADD', borderRadius: 3
     }]
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true } }
-  }
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
 });
 
-// Weekly Trend Line
-new Chart(document.getElementById('trendLine'), {
+// Weekly trend
+const weekLabels = [
+  'Jun 23-29\'25', 'Jun 30-Jul 6', 'Jul 7-13', 'Jul 14-20', 'Jul 21-27',
+  'Jul 28-Aug 3', 'Aug 4-10', 'Aug 11-17', 'Aug 25-31',
+  'Sep 1-7', 'Sep 8-14',
+  'Apr 13-19\'26', 'Apr 20-26', 'Apr 27-May 3',
+  'May 4-10', 'May 11-18', 'May 25-31',
+  'Jun 1-7', 'Jun 8-14', 'Jun 15-21'
+];
+const weekLate =  [2, 2, 2, 2, 3,  2, 2, 1, 2,  2, 1,  0, 2, 0,  0, 2, 1,  0, 1, 10];
+const weekSpeed = [0, 0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  2, 0, 2,  5, 1, 1,  6, 8,  6];
+
+new Chart(document.getElementById('chartTrend'), {
   type: 'line',
   data: {
-    labels: [
-      'Jun 2 2025','Jun 9','Jun 16','Jun 23','Jun 30','Jul 7','Jul 14','Jul 21','Jul 28','Aug 4','Aug 11','Aug 25',
-      'Sep 1','Sep 8','Sep 15','Sep 22','Apr 13 2026','Apr 20','Apr 27','May 4','May 11','May 25'
-    ],
+    labels: weekLabels,
     datasets: [
-      {
-        label: 'Late Night',
-        data: [0, 2, 1, 1, 2, 2, 2, 5, 2, 1, 1, 1, 1, 1, 0, 0, 0, 2, 0, 0, 10, 6],
-        borderColor: lateColor, backgroundColor: lateColor + '22', fill: true, tension: 0.3, pointRadius: 3
-      },
-      {
-        label: 'Speeding',
-        data: [2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 5, 11, 1],
-        borderColor: speedColor, backgroundColor: speedColor + '22', fill: true, tension: 0.3, pointRadius: 3
-      }
+      { label: 'Late Night', data: weekLate, borderColor: '#EF9F27', backgroundColor: 'rgba(239,159,39,0.1)', tension: 0.3, fill: true },
+      { label: 'Speeding', data: weekSpeed, borderColor: '#E24B4A', backgroundColor: 'rgba(226,75,74,0.1)', tension: 0.3, fill: true },
     ]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
-    scales: { y: { beginAtZero: true, ticks: { stepSize: 2 } } }
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { ticks: { font: { size: 10 }, maxRotation: 45 } },
+      y: { beginAtZero: true }
+    }
   }
 });
 </script>
