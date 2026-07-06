@@ -113,47 +113,27 @@
 
   /* TABLE WRAPPER */
   .tbl-wrap { overflow-x: auto; }
+  .loading-banner { background:#f0f6ff; border:1.5px solid #2E75B6; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:13px; color:#1F5C8B; }
+  .error-banner { background:#fff5f5; border:1.5px solid #E24B4A; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:13px; color:#a33; }
+  .refresh-btn { background:#2E75B6; color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer; margin-left:10px; }
+  .refresh-btn:hover { background:#1F5C8B; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>🚗 Sustainable Heating — Vehicle Transgressions Dashboard</h1>
-  <p>Speeding (85 km/h+) &amp; Late-Night Driving (after 22:00) · June 2025 – Present · Confidential — EXCO Distribution</p>
+  <p>Speeding (85 km/h+) &amp; Late-Night Driving (after 22:00) · Live from Supabase · Confidential — EXCO Distribution</p>
 </div>
 
 <div class="container">
 
+  <div id="statusBanner"></div>
+
   <!-- NEW THIS WEEK BANNER -->
-  <div class="new-banner">
-    <h2>🔴 New This Week — 22–28 June 2026</h2>
-    <div class="new-cards">
-      <div class="new-card speed">
-        <div class="driver-name">Tawana Hershel Masiwa <span class="badge esc">ESCALATION</span></div>
-        <div class="vehicle">Man Truck CEY69471</div>
-        <div class="incidents">9 speedings of 85km/h+ — 4th consecutive week (5→8→6→9)</div>
-      </div>
-      <div class="new-card speed">
-        <div class="driver-name">Ben <span class="badge esc">ESCALATION</span></div>
-        <div class="vehicle">Merc Actros CEY63155</div>
-        <div class="incidents">5 speedings of 85km/h+ this week</div>
-      </div>
-      <div class="new-card late">
-        <div class="driver-name">Ricardo <span class="badge rep">REPEAT</span></div>
-        <div class="vehicle">VW Touran CEY63250</div>
-        <div class="incidents">3 late-night drives: 27/6 23:48–00:05, 28/6 00:07–00:09, 00:18–00:30</div>
-      </div>
-      <div class="new-card late">
-        <div class="driver-name">Kreasen <span class="badge new">NEW DRIVER</span></div>
-        <div class="vehicle">VW Touran CEY63250</div>
-        <div class="incidents">3 late-night drives: 24/6 22:26–22:47, 22:53–23:06; 28/6 00:35–00:38</div>
-      </div>
-      <div class="new-card late">
-        <div class="driver-name">Shaquill <span class="badge new">NEW DRIVER</span></div>
-        <div class="vehicle">Merc Vito CEY13038</div>
-        <div class="incidents">1 late-night drive: 26/6 22:09–22:23</div>
-      </div>
-    </div>
+  <div class="new-banner" id="newBanner" style="display:none">
+    <h2 id="newBannerTitle">🔴 New This Week</h2>
+    <div class="new-cards" id="newCards"></div>
   </div>
 
   <!-- WEEK-ON-WEEK COMPARISON -->
@@ -164,38 +144,12 @@
         <thead>
           <tr><th>Week</th><th>Late</th><th>Speed</th><th>Total</th><th>vs Prev</th></tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>8–14 Jun</td>
-            <td>0</td><td>8</td><td>8</td><td class="arrow-eq">—</td>
-          </tr>
-          <tr>
-            <td>15–21 Jun</td>
-            <td>11</td><td>6</td><td>16</td><td class="arrow-up">↑ +8</td>
-          </tr>
-          <tr>
-            <td>22–28 Jun</td>
-            <td>7</td><td>14</td><td>21</td><td class="arrow-up">↑ +5</td>
-          </tr>
-          <tr class="total">
-            <td>All Time</td>
-            <td id="total-late-summary">—</td>
-            <td id="total-speed-summary">—</td>
-            <td id="total-all-summary">—</td>
-            <td>—</td>
-          </tr>
-        </tbody>
+        <tbody id="wowTbody"></tbody>
       </table>
     </div>
     <div class="card">
       <h3>👤 Driver Changes This Week</h3>
-      <div class="change-row"><span class="name">Tawana / Man Truck</span><span class="delta up">↑ +9 speed (was 6)</span></div>
-      <div class="change-row"><span class="name">Ben / Merc Actros</span><span class="delta up">↑ +5 speed (escalating)</span></div>
-      <div class="change-row"><span class="name">Ricardo / VW Touran</span><span class="delta up">↑ +3 late (new vehicle)</span></div>
-      <div class="change-row"><span class="name">Kreasen / VW Touran</span><span class="delta new">● NEW — 3 late-night</span></div>
-      <div class="change-row"><span class="name">Shaquill / Merc Vito</span><span class="delta new">● NEW — 1 late-night</span></div>
-      <div class="change-row"><span class="name">Nico / Chev CEY29293</span><span class="delta dn">✓ No repeat this week</span></div>
-      <div class="change-row"><span class="name">Lami / Opel CEY34027</span><span class="delta dn">✓ No repeat this week</span></div>
+      <div id="driverChanges"></div>
     </div>
   </div>
 
@@ -204,17 +158,17 @@
     <div class="metric-card">
       <div class="label">Total Incidents (All Time)</div>
       <div class="value red" id="m-total">—</div>
-      <div class="delta-small">This week: <span class="up">+21</span></div>
+      <div class="delta-small">This week: <span class="up" id="m-total-delta">—</span></div>
     </div>
     <div class="metric-card">
       <div class="label">Late-Night Driving</div>
       <div class="value amber" id="m-late">—</div>
-      <div class="delta-small">This week: <span class="up">+7</span></div>
+      <div class="delta-small">This week: <span class="up" id="m-late-delta">—</span></div>
     </div>
     <div class="metric-card">
       <div class="label">Speeding (85km/h+)</div>
       <div class="value red" id="m-speed">—</div>
-      <div class="delta-small">This week: <span class="up">+14</span></div>
+      <div class="delta-small">This week: <span class="up" id="m-speed-delta">—</span></div>
     </div>
     <div class="metric-card">
       <div class="label">Repeat Offenders</div>
@@ -309,238 +263,336 @@
 
 </div><!-- /container -->
 
-<div class="footer">
-  Sustainable Heating · Vehicle Transgressions Dashboard · Generated by Jarvis · 29 June 2026 · Confidential — EXCO Distribution
+<div class="footer" id="footerText">
+  Sustainable Heating · Vehicle Transgressions Dashboard · Live from Supabase · Confidential — EXCO Distribution
 </div>
 
 <script>
-// =====================================================================
-// COMPLETE INCIDENT DATABASE
-// =====================================================================
-const incidents = [
-  // === Jun 30 - Jul 6, 2025 ===
-  {week:"30 Jun–6 Jul 2025",date:"1/7",driver:"Nardino",type:"late",vehicle:"Nissan NP300 CEY11873",detail:"22:29–22:48"},
-  {week:"30 Jun–6 Jul 2025",date:"3/7",driver:"Nardino",type:"late",vehicle:"Nissan NP300 CEY11873",detail:"02:07–02:32"},
-  {week:"30 Jun–6 Jul 2025",date:"5/7",driver:"Nardino",type:"late",vehicle:"Nissan NP300 CEY11873",detail:"22:09–22:22"},
+const SUPABASE_URL = "https://lxdvrhqiyhduaypwgwuv.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_DdDxXDlsvR4uP0en1kaVlA_fSf7ihT5";
 
-  // === Jul 7–13, 2025 ===
-  {week:"7–13 Jul 2025",date:"12/7",driver:"Siseko",type:"late",vehicle:"Opel Combo CEY34027",detail:"22:06–22:22"},
-  {week:"7–13 Jul 2025",date:"12/7",driver:"Siseko",type:"late",vehicle:"Opel Combo CEY34027",detail:"22:25–23:11"},
-  {week:"7–13 Jul 2025",date:"12/7",driver:"Siseko",type:"late",vehicle:"Opel Combo CEY34027",detail:"23:47–23:55"},
+let expandedIncidents = [];
+let weekOrder = [];
+let latestWeek = null;
+let prevWeek = null;
 
-  // === Jul 14–20, 2025 ===
-  {week:"14–20 Jul 2025",date:"15/7",driver:"Headman",type:"late",vehicle:"Chev Utility CEY22432",detail:"00:21–00:57"},
-  {week:"14–20 Jul 2025",date:"20/7",driver:"Headman",type:"late",vehicle:"Chev Utility CEY22432",detail:"00:01–00:47"},
-  {week:"14–20 Jul 2025",date:"17/7",driver:"Nardino",type:"late",vehicle:"Nissan NP300 CEY11873",detail:"22:05–22:18"},
-  {week:"14–20 Jul 2025",date:"19/7",driver:"Nardino",type:"speed",vehicle:"Nissan NP300 CEY11873",detail:"85km/h+"},
-  {week:"14–20 Jul 2025",date:"20/7",driver:"Siyabonga",type:"late",vehicle:"Opel Combo CEY19309",detail:"22:14–22:46"},
-
-  // === Jul 21–27, 2025 ===
-  {week:"21–27 Jul 2025",date:"22/7",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:28–22:35"},
-  {week:"21–27 Jul 2025",date:"22/7",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:39–22:51"},
-  {week:"21–27 Jul 2025",date:"22/7",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"23:02–23:13"},
-  {week:"21–27 Jul 2025",date:"22/7",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"23:16–23:32"},
-  {week:"21–27 Jul 2025",date:"25/7",driver:"Nardino",type:"late",vehicle:"Nissan NP300 CEY11873",detail:"22:44–23:01"},
-  {week:"21–27 Jul 2025",date:"26/7",driver:"Nardino",type:"speed",vehicle:"Nissan NP300 CEY11873",detail:"85km/h+"},
-
-  // === Jul 28 – Aug 3, 2025 ===
-  {week:"28 Jul–3 Aug 2025",date:"3/8",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"23:46–23:49"},
-  {week:"28 Jul–3 Aug 2025",date:"3/8",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"23:58–23:59"},
-  {week:"28 Jul–3 Aug 2025",date:"3/8",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"00:07–00:16"},
-  {week:"28 Jul–3 Aug 2025",date:"2/8",driver:"Sifiso",type:"late",vehicle:"Nissan NP200 CEY19762",detail:"22:50–23:12"},
-  {week:"28 Jul–3 Aug 2025",date:"3/8",driver:"Sifiso",type:"late",vehicle:"Nissan NP200 CEY19762",detail:"22:10–22:25"},
-  {week:"28 Jul–3 Aug 2025",date:"2/8",driver:"Ricardo",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"85km/h+"},
-
-  // === Aug 4–10, 2025 ===
-  {week:"4–10 Aug 2025",date:"10/8",driver:"Headman",type:"late",vehicle:"Chev Utility CEY22432",detail:"22:20–22:23"},
-  {week:"4–10 Aug 2025",date:"4/8",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"00:00–00:36"},
-  {week:"4–10 Aug 2025",date:"6/8",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:11–22:20"},
-  {week:"4–10 Aug 2025",date:"7/8",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:06–22:09"},
-  {week:"4–10 Aug 2025",date:"9/8",driver:"Ricardo",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"85km/h+"},
-  {week:"4–10 Aug 2025",date:"10/8",driver:"Ricardo",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"85km/h+"},
-
-  // === Aug 11–17, 2025 ===
-  {week:"11–17 Aug 2025",date:"12/8",driver:"Shal",type:"late",vehicle:"Nissan NP300 CEY11873",detail:"22:39–22:53"},
-
-  // === Aug 25–31, 2025 ===
-  {week:"25–31 Aug 2025",date:"29/8",driver:"Randal",type:"late",vehicle:"Isuzu KB300 CEY71650",detail:"22:45–22:48"},
-  {week:"25–31 Aug 2025",date:"30/8",driver:"Randal",type:"late",vehicle:"Isuzu KB300 CEY71650",detail:"01:24–01:30"},
-  {week:"25–31 Aug 2025",date:"29/8",driver:"Ricardo",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"85km/h+"},
-
-  // === Sep 1–7, 2025 ===
-  {week:"1–7 Sep 2025",date:"3/9",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:16–23:01"},
-  {week:"1–7 Sep 2025",date:"3/9",driver:"Ricardo",type:"late",vehicle:"Chev Utility CEY29293",detail:"23:04–23:09"},
-  {week:"1–7 Sep 2025",date:"5/9",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:47–23:14"},
-  {week:"1–7 Sep 2025",date:"7/9",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:16–22:32"},
-  {week:"1–7 Sep 2025",date:"4/9",driver:"Ricardo",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"130km/h",maxSpeed:130},
-  {week:"1–7 Sep 2025",date:"5/9",driver:"Ben",type:"speed",vehicle:"Merc Actros CEY63155",detail:"85km/h+"},
-
-  // === Sep 8–14, 2025 ===
-  {week:"8–14 Sep 2025",date:"13/9",driver:"Siyabonga",type:"late",vehicle:"Ford Ranger CEY78059",detail:"23:00–23:25"},
-  {week:"8–14 Sep 2025",date:"13/9",driver:"Sifiso",type:"late",vehicle:"Nissan NP200 CEY19762",detail:"22:09–22:17"},
-  {week:"8–14 Sep 2025",date:"14/9",driver:"Ricardo",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"139km/h",maxSpeed:139},
-  {week:"8–14 Sep 2025",date:"12/9",driver:"Ben",type:"speed",vehicle:"Merc Actros CEY63155",detail:"85km/h+"},
-
-  // === Apr 13–19, 2026 ===
-  {week:"13–19 Apr 2026",date:"13/4",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"131km/h",maxSpeed:131},
-  {week:"13–19 Apr 2026",date:"18/4",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"133km/h",maxSpeed:133},
-  {week:"13–19 Apr 2026",date:"19/4",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"131km/h",maxSpeed:131},
-
-  // === Apr 20–26, 2026 ===
-  {week:"20–26 Apr 2026",date:"25/4",driver:"Marius Gerber",type:"late",vehicle:"Kia K2700 CEY57306",detail:"23:32–23:53"},
-  {week:"20–26 Apr 2026",date:"26/4",driver:"Marius Gerber",type:"late",vehicle:"Kia K2700 CEY57306",detail:"00:30–00:36"},
-  {week:"20–26 Apr 2026",date:"25/4",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"85km/h+"},
-
-  // === Apr 27 – May 3, 2026 ===
-  {week:"27 Apr–3 May 2026",date:"30/4",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"133km/h",maxSpeed:133},
-  {week:"27 Apr–3 May 2026",date:"2/5",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"131km/h",maxSpeed:131},
-
-  // === May 4–10, 2026 ===
-  {week:"4–10 May 2026",date:"4–10/5",driver:"Ben",type:"speed",vehicle:"Merc Actros CEY63155",detail:"4× 85km/h+",count:4},
-  {week:"4–10 May 2026",date:"7/5",driver:"Marius",type:"speed",vehicle:"Mitsubishi Triton CEY74727",detail:"130km/h",maxSpeed:130},
-
-  // === May 11–17, 2026 ===
-  {week:"11–17 May 2026",date:"12/5",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"22:19–22:32"},
-  {week:"11–17 May 2026",date:"12/5",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"23:48–00:11"},
-  {week:"11–17 May 2026",date:"13/5",driver:"Godwin",type:"late",vehicle:"Chev Utility CEY29293",detail:"00:05–00:09"},
-  {week:"11–17 May 2026",date:"12/5",driver:"Sesko",type:"late",vehicle:"Opel Combo CEY34027",detail:"22:30–22:48"},
-  {week:"11–17 May 2026",date:"14/5",driver:"Sifiso",type:"late",vehicle:"Nissan NP200 CEY19762",detail:"22:33–22:55"},
-  {week:"11–17 May 2026",date:"11/5",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"139km/h",maxSpeed:139},
-  {week:"11–17 May 2026",date:"14/5",driver:"Ben",type:"speed",vehicle:"Merc Actros CEY63155",detail:"85km/h+"},
-  {week:"11–17 May 2026",date:"15/5",driver:"Ben",type:"speed",vehicle:"Merc Actros CEY63155",detail:"85km/h+"},
-
-  // === May 25–31, 2026 ===
-  {week:"25–31 May 2026",date:"27/5",driver:"Ricardo Krige",type:"speed",vehicle:"Ford Ranger CEY78059",detail:"149km/h",maxSpeed:149},
-  {week:"25–31 May 2026",date:"27/5",driver:"Unknown",type:"late",vehicle:"Merc Vito CEY13038",detail:"23:33–23:58"},
-
-  // === Jun 1–7, 2026 ===
-  {week:"1–7 Jun 2026",date:"1–7/6",driver:"Tawana Hershel Masiwa",type:"speed",vehicle:"Man Truck CEY69471",detail:"5× 85km/h+",count:5},
-  {week:"1–7 Jun 2026",date:"2/6",driver:"Edgar",type:"speed",vehicle:"Nissan UD440 CEY69850",detail:"85km/h+"},
-
-  // === Jun 8–14, 2026 ===
-  {week:"8–14 Jun 2026",date:"8–14/6",driver:"Tawana Hershel Masiwa",type:"speed",vehicle:"Man Truck CEY69471",detail:"8× 85km/h+",count:8},
-
-  // === Jun 15–21, 2026 ===
-  {week:"15–21 Jun 2026",date:"21/6",driver:"Nico",type:"late",vehicle:"Chev Utility CEY29293",detail:"03:57–04:10"},
-  {week:"15–21 Jun 2026",date:"15–21/6",driver:"Tawana Hershel Masiwa",type:"speed",vehicle:"Man Truck CEY69471",detail:"6× 85km/h+",count:6},
-  {week:"15–21 Jun 2026",date:"18/6",driver:"Sifiso",type:"late",vehicle:"Nissan NP200 CEY19762",detail:"00:10–00:58"},
-  {week:"15–21 Jun 2026",date:"17/6",driver:"Ricardo",type:"late",vehicle:"Opel Combo CEY19309",detail:"01:38–02:05"},
-  {week:"15–21 Jun 2026",date:"17/6",driver:"Ricardo",type:"late",vehicle:"Opel Combo CEY19309",detail:"02:07–02:27"},
-  {week:"15–21 Jun 2026",date:"17/6",driver:"Ricardo",type:"late",vehicle:"Opel Combo CEY19309",detail:"02:31–02:49"},
-  {week:"15–21 Jun 2026",date:"15–16/6",driver:"Lami",type:"late",vehicle:"Opel Combo CEY34027",detail:"23:49–00:13"},
-  {week:"15–21 Jun 2026",date:"16/6",driver:"Lami",type:"late",vehicle:"Opel Combo CEY34027",detail:"00:43–01:14"},
-  {week:"15–21 Jun 2026",date:"16/6",driver:"Lami",type:"late",vehicle:"Opel Combo CEY34027",detail:"01:24–01:25"},
-  {week:"15–21 Jun 2026",date:"16/6",driver:"Lami",type:"late",vehicle:"Opel Combo CEY34027",detail:"01:31–01:53"},
-  {week:"15–21 Jun 2026",date:"16/6",driver:"Lami",type:"late",vehicle:"Opel Combo CEY34027",detail:"02:07–02:29"},
-
-  // === Jun 22–28, 2026 (NEW WEEK) ===
-  {week:"22–28 Jun 2026",date:"22–28/6",driver:"Tawana Hershel Masiwa",type:"speed",vehicle:"Man Truck CEY69471",detail:"9× 85km/h+",count:9,isNew:true},
-  {week:"22–28 Jun 2026",date:"22–28/6",driver:"Ben",type:"speed",vehicle:"Merc Actros CEY63155",detail:"5× 85km/h+",count:5,isNew:true},
-  {week:"22–28 Jun 2026",date:"26/6",driver:"Shaquill",type:"late",vehicle:"Merc Vito CEY13038",detail:"22:09–22:23",isNew:true},
-  {week:"22–28 Jun 2026",date:"24/6",driver:"Kreasen",type:"late",vehicle:"VW Touran CEY63250",detail:"22:26–22:47",isNew:true},
-  {week:"22–28 Jun 2026",date:"24/6",driver:"Kreasen",type:"late",vehicle:"VW Touran CEY63250",detail:"22:53–23:06",isNew:true},
-  {week:"22–28 Jun 2026",date:"27–28/6",driver:"Ricardo",type:"late",vehicle:"VW Touran CEY63250",detail:"23:48–00:05",isNew:true},
-  {week:"22–28 Jun 2026",date:"28/6",driver:"Ricardo",type:"late",vehicle:"VW Touran CEY63250",detail:"00:07–00:09",isNew:true},
-  {week:"22–28 Jun 2026",date:"28/6",driver:"Ricardo",type:"late",vehicle:"VW Touran CEY63250",detail:"00:18–00:30",isNew:true},
-  {week:"22–28 Jun 2026",date:"28/6",driver:"Kreasen",type:"late",vehicle:"VW Touran CEY63250",detail:"00:35–00:38",isNew:true},
-];
-
-// Expand count-based incidents
-const expandedIncidents = [];
-incidents.forEach(inc => {
-  const n = inc.count || 1;
-  for (let i = 0; i < n; i++) {
-    expandedIncidents.push({...inc, _idx: expandedIncidents.length});
-  }
-});
-
-// Normalise Ricardo Krige -> Ricardo for aggregation
-function normName(n) {
-  if (n === "Ricardo Krige") return "Ricardo";
-  return n;
+function fmtDate(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return `${d.getDate()}/${d.getMonth()+1}`;
 }
 
-// =====================================================================
-// AGGREGATE DRIVER DATA
-// =====================================================================
-const driverMap = {};
-expandedIncidents.forEach(inc => {
-  const d = normName(inc.driver);
-  if (!driverMap[d]) driverMap[d] = {late:0, speed:0, vehicles:new Set(), maxSpeed:0, newThisWeek:false};
-  if (inc.type === "late") driverMap[d].late++;
-  else driverMap[d].speed++;
-  driverMap[d].vehicles.add(inc.vehicle);
-  if (inc.maxSpeed) driverMap[d].maxSpeed = Math.max(driverMap[d].maxSpeed, inc.maxSpeed);
-  if (inc.isNew) driverMap[d].newThisWeek = true;
-});
+function shortVehicle(v) {
+  return (v||"").replace("Chev Utility","Chev").replace("Nissan NP","NP").replace("Opel Combo","Opel").replace("Ford Ranger","Ford").replace("Merc Actros","Actros");
+}
 
-const NEW_WEEK_DRIVERS = ["Tawana Hershel Masiwa","Ben","Shaquill","Kreasen","Ricardo"];
-const NEW_DRIVERS_OVERALL = ["Kreasen","Shaquill","Lami","Edgar","Marius","Marius Gerber"];
+async function loadDashboard() {
+  const statusEl = document.getElementById("statusBanner");
+  statusEl.innerHTML = `<div class="loading-banner">⏳ Loading live data from Supabase…</div>`;
+  try {
+    const resp = await fetch(
+      `${SUPABASE_URL}/rest/v1/fleet_transgressions?select=*&order=occurred_on.asc`,
+      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    if (!resp.ok) throw new Error(`Supabase returned ${resp.status}`);
+    const rows = await resp.json();
+    if (!rows.length) {
+      statusEl.innerHTML = `<div class="error-banner">No incident data found in Supabase yet.</div>`;
+      return;
+    }
 
-// Determine which drivers changed this week
-const prevWeekDrivers = ["Nico","Tawana Hershel Masiwa","Sifiso","Ricardo","Lami"];
-const changedThisWeek = {};
-NEW_WEEK_DRIVERS.forEach(d => { changedThisWeek[normName(d)] = true; });
+    expandedIncidents = rows.map(r => ({
+      week: r.week_label,
+      date: fmtDate(r.occurred_on),
+      occurred_on: r.occurred_on,
+      driver: r.driver_name,
+      type: r.incident_type === "speeding" ? "speed" : "late",
+      vehicle: r.vehicle_description,
+      detail: r.detail,
+      maxSpeed: r.max_speed_kmh ? Number(r.max_speed_kmh) : 0,
+    }));
 
-// Fill totals in header
-const totalLate = expandedIncidents.filter(i=>i.type==="late").length;
-const totalSpeed = expandedIncidents.filter(i=>i.type==="speed").length;
-const totalAll = expandedIncidents.length;
-const repeatOffenders = Object.entries(driverMap).filter(([,v])=>(v.late+v.speed)>=2).length;
-document.getElementById("m-total").textContent = totalAll;
-document.getElementById("m-late").textContent = totalLate;
-document.getElementById("m-speed").textContent = totalSpeed;
-document.getElementById("m-repeat").textContent = repeatOffenders;
-document.getElementById("total-late-summary").textContent = totalLate;
-document.getElementById("total-speed-summary").textContent = totalSpeed;
-document.getElementById("total-all-summary").textContent = totalAll;
+    // Chronological week order, derived from actual dates (no hardcoding, self-extends every week)
+    const weekMinDate = {};
+    expandedIncidents.forEach(i => {
+      if (!weekMinDate[i.week] || i.occurred_on < weekMinDate[i.week]) weekMinDate[i.week] = i.occurred_on;
+    });
+    weekOrder = Object.keys(weekMinDate).sort((a,b) => weekMinDate[a] < weekMinDate[b] ? -1 : 1);
+    latestWeek = weekOrder[weekOrder.length - 1];
+    prevWeek = weekOrder.length > 1 ? weekOrder[weekOrder.length - 2] : null;
 
-// =====================================================================
-// DRIVER TABLE
-// =====================================================================
-const driverTableData = Object.entries(driverMap).map(([name, d]) => ({
-  name,
-  late: d.late,
-  speed: d.speed,
-  total: d.late + d.speed,
-  vehicles: [...d.vehicles].join(", "),
-  maxSpeed: d.maxSpeed || "—",
-  risk: (d.late + d.speed >= 10 || d.maxSpeed >= 130) ? "High" : (d.late + d.speed >= 5 || d.maxSpeed >= 100) ? "Medium" : "Low",
-  isNew: d.newThisWeek,
-  changed: !!changedThisWeek[name],
-  newDriver: NEW_DRIVERS_OVERALL.includes(name)
-})).sort((a,b) => b.total - a.total);
+    expandedIncidents.forEach(i => { i.isNew = (i.week === latestWeek); });
 
-const tbody = document.getElementById("driverTbody");
-driverTableData.forEach(d => {
-  const tr = document.createElement("tr");
-  if (d.risk === "High") tr.className = "high";
-  else if (d.newDriver && d.changed) tr.className = "new-driver";
-  let statusTags = "";
-  if (d.isNew) statusTags += '<span class="tag new">NEW</span>';
-  if (d.changed && !d.isNew) statusTags += '<span class="tag changed">CHANGED</span>';
-  tr.innerHTML = `
-    <td>${d.name}${statusTags}</td>
-    <td style="font-size:12px;color:#666">${d.vehicles}</td>
-    <td>${d.late}</td>
-    <td>${d.speed}</td>
-    <td><strong>${d.total}</strong></td>
-    <td>${d.maxSpeed !== "—" ? d.maxSpeed + " km/h" : "—"}</td>
-    <td class="risk-${d.risk.toLowerCase()}">${d.risk}</td>
-    <td>${d.risk === "High" ? "⚠️ Action Required" : d.risk === "Medium" ? "🟡 Monitor" : "✅ Low Risk"}</td>
-  `;
-  tbody.appendChild(tr);
-});
+    statusEl.innerHTML = `<div class="loading-banner">✅ Live data — ${expandedIncidents.length} incidents loaded from Supabase (${weekOrder[0]} → ${latestWeek}). <button class="refresh-btn" onclick="location.reload()">Refresh</button></div>`;
+    document.getElementById("footerText").textContent =
+      `Sustainable Heating · Vehicle Transgressions Dashboard · Live from Supabase · Refreshed ${new Date().toLocaleString('en-ZA')} · Confidential — EXCO Distribution`;
 
-// =====================================================================
-// INCIDENT LOG
-// =====================================================================
-const drivers = [...new Set(expandedIncidents.map(i=>normName(i.driver)))].sort();
-const weeks = [...new Set(expandedIncidents.map(i=>i.week))];
-const driverSel = document.getElementById("filterDriver");
-const weekSel = document.getElementById("filterWeek");
-drivers.forEach(d => { const o = document.createElement("option"); o.value=d; o.textContent=d; driverSel.appendChild(o); });
-weeks.forEach(w => { const o = document.createElement("option"); o.value=w; o.textContent=w; weekSel.appendChild(o); });
+    render();
+  } catch (err) {
+    statusEl.innerHTML = `<div class="error-banner">⚠️ Could not load live data: ${err.message}. <button class="refresh-btn" onclick="location.reload()">Retry</button></div>`;
+  }
+}
+
+function render() {
+  // =====================================================================
+  // AGGREGATE DRIVER DATA (all-time)
+  // =====================================================================
+  const driverMap = {};
+  expandedIncidents.forEach(inc => {
+    const d = inc.driver;
+    if (!driverMap[d]) driverMap[d] = {late:0, speed:0, vehicles:new Set(), maxSpeed:0, newThisWeek:false, firstWeek:inc.week};
+    if (inc.type === "late") driverMap[d].late++;
+    else driverMap[d].speed++;
+    driverMap[d].vehicles.add(inc.vehicle);
+    if (inc.maxSpeed) driverMap[d].maxSpeed = Math.max(driverMap[d].maxSpeed, inc.maxSpeed);
+    if (inc.isNew) driverMap[d].newThisWeek = true;
+    if (weekOrder.indexOf(inc.week) < weekOrder.indexOf(driverMap[d].firstWeek)) driverMap[d].firstWeek = inc.week;
+  });
+
+  // Per-driver this-week vs prior-week counts, for escalation/new-driver/repeat detection
+  const thisWeekCounts = {}, prevWeekCounts = {}, priorTotal = {};
+  expandedIncidents.forEach(inc => {
+    const d = inc.driver;
+    if (!thisWeekCounts[d]) thisWeekCounts[d] = {late:0, speed:0};
+    if (!prevWeekCounts[d]) prevWeekCounts[d] = {late:0, speed:0};
+    if (!priorTotal[d]) priorTotal[d] = 0;
+    if (inc.week === latestWeek) thisWeekCounts[d][inc.type]++;
+    else if (inc.week === prevWeek) prevWeekCounts[d][inc.type]++;
+    if (inc.week !== latestWeek) priorTotal[d]++;
+  });
+
+  const activeThisWeek = Object.keys(thisWeekCounts).filter(d => thisWeekCounts[d].late + thisWeekCounts[d].speed > 0);
+  const NEW_DRIVERS_OVERALL = activeThisWeek.filter(d => priorTotal[d] === 0);
+  const ESCALATING = activeThisWeek.filter(d => {
+    const tw = thisWeekCounts[d].late + thisWeekCounts[d].speed;
+    const pw = prevWeekCounts[d].late + prevWeekCounts[d].speed;
+    return priorTotal[d] > 0 && tw > pw;
+  });
+  const changedThisWeek = {};
+  activeThisWeek.forEach(d => { changedThisWeek[d] = true; });
+
+  // =====================================================================
+  // NEW THIS WEEK BANNER
+  // =====================================================================
+  const banner = document.getElementById("newBanner");
+  const cardsEl = document.getElementById("newCards");
+  cardsEl.innerHTML = "";
+  if (activeThisWeek.length) {
+    banner.style.display = "";
+    document.getElementById("newBannerTitle").textContent = `🔴 New This Week — ${latestWeek}`;
+    activeThisWeek
+      .sort((a,b) => (thisWeekCounts[b].late+thisWeekCounts[b].speed) - (thisWeekCounts[a].late+thisWeekCounts[a].speed))
+      .forEach(d => {
+        const tw = thisWeekCounts[d];
+        const isNewDriver = NEW_DRIVERS_OVERALL.includes(d);
+        const isEsc = ESCALATING.includes(d);
+        const cls = tw.speed > 0 && tw.late === 0 ? "speed" : (tw.late > 0 && tw.speed === 0 ? "late" : "mixed");
+        const badge = isNewDriver ? '<span class="badge new">NEW DRIVER</span>' : isEsc ? '<span class="badge esc">ESCALATION</span>' : '<span class="badge rep">REPEAT</span>';
+        const details = expandedIncidents.filter(i => i.driver === d && i.week === latestWeek);
+        const vehicles = [...new Set(details.map(i=>i.vehicle))].join(", ");
+        const summary = details.map(i => `${i.date} ${i.detail}`).join("; ");
+        const card = document.createElement("div");
+        card.className = `new-card ${cls}`;
+        card.innerHTML = `
+          <div class="driver-name">${d} ${badge}</div>
+          <div class="vehicle">${vehicles}</div>
+          <div class="incidents">${tw.late+tw.speed} incident(s): ${summary}</div>
+        `;
+        cardsEl.appendChild(card);
+      });
+  } else {
+    banner.style.display = "none";
+  }
+
+  // =====================================================================
+  // WEEK-ON-WEEK SUMMARY (last 3 weeks)
+  // =====================================================================
+  const wowTbody = document.getElementById("wowTbody");
+  wowTbody.innerHTML = "";
+  const last3 = weekOrder.slice(-3);
+  let prevTotal = null;
+  last3.forEach(w => {
+    const late = expandedIncidents.filter(i=>i.week===w&&i.type==="late").length;
+    const speed = expandedIncidents.filter(i=>i.week===w&&i.type==="speed").length;
+    const total = late + speed;
+    let arrowHtml = '<span class="arrow-eq">—</span>';
+    if (prevTotal !== null) {
+      const diff = total - prevTotal;
+      if (diff > 0) arrowHtml = `<span class="arrow-up">↑ +${diff}</span>`;
+      else if (diff < 0) arrowHtml = `<span class="arrow-dn">↓ ${diff}</span>`;
+      else arrowHtml = '<span class="arrow-eq">—</span>';
+    }
+    prevTotal = total;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${w}</td><td>${late}</td><td>${speed}</td><td>${total}</td><td>${arrowHtml}</td>`;
+    wowTbody.appendChild(tr);
+  });
+  const totalLateAll = expandedIncidents.filter(i=>i.type==="late").length;
+  const totalSpeedAll = expandedIncidents.filter(i=>i.type==="speed").length;
+  const trTotal = document.createElement("tr");
+  trTotal.className = "total";
+  trTotal.innerHTML = `<td>All Time</td><td>${totalLateAll}</td><td>${totalSpeedAll}</td><td>${totalLateAll+totalSpeedAll}</td><td>—</td>`;
+  wowTbody.appendChild(trTotal);
+
+  // =====================================================================
+  // DRIVER CHANGES THIS WEEK
+  // =====================================================================
+  const changesEl = document.getElementById("driverChanges");
+  changesEl.innerHTML = "";
+  if (activeThisWeek.length) {
+    activeThisWeek.forEach(d => {
+      const tw = thisWeekCounts[d].late + thisWeekCounts[d].speed;
+      const pw = prevWeekCounts[d].late + prevWeekCounts[d].speed;
+      const vehicle = shortVehicle([...driverMap[d].vehicles][0] || "");
+      let deltaHtml;
+      if (priorTotal[d] === 0) deltaHtml = `<span class="delta new">● NEW — ${tw} incident(s)</span>`;
+      else if (tw > pw) deltaHtml = `<span class="delta up">↑ +${tw-pw} (was ${pw})</span>`;
+      else if (tw < pw) deltaHtml = `<span class="delta dn">↓ ${tw-pw} (was ${pw})</span>`;
+      else deltaHtml = `<span class="delta">↔ steady (${tw})</span>`;
+      const row = document.createElement("div");
+      row.className = "change-row";
+      row.innerHTML = `<span class="name">${d} / ${vehicle}</span>${deltaHtml}`;
+      changesEl.appendChild(row);
+    });
+  } else {
+    changesEl.innerHTML = `<div class="change-row"><span class="name">No incidents recorded this week</span></div>`;
+  }
+
+  // =====================================================================
+  // METRIC CARDS
+  // =====================================================================
+  const totalAll = expandedIncidents.length;
+  const repeatOffenders = Object.entries(driverMap).filter(([,v])=>(v.late+v.speed)>=2).length;
+  const thisWeekTotal = expandedIncidents.filter(i=>i.isNew).length;
+  const thisWeekLate = expandedIncidents.filter(i=>i.isNew && i.type==="late").length;
+  const thisWeekSpeed = expandedIncidents.filter(i=>i.isNew && i.type==="speed").length;
+  document.getElementById("m-total").textContent = totalAll;
+  document.getElementById("m-late").textContent = totalLateAll;
+  document.getElementById("m-speed").textContent = totalSpeedAll;
+  document.getElementById("m-repeat").textContent = repeatOffenders;
+  document.getElementById("m-total-delta").textContent = `+${thisWeekTotal}`;
+  document.getElementById("m-late-delta").textContent = `+${thisWeekLate}`;
+  document.getElementById("m-speed-delta").textContent = `+${thisWeekSpeed}`;
+
+  // =====================================================================
+  // DRIVER TABLE
+  // =====================================================================
+  const driverTableData = Object.entries(driverMap).map(([name, d]) => ({
+    name,
+    late: d.late,
+    speed: d.speed,
+    total: d.late + d.speed,
+    vehicles: [...d.vehicles].join(", "),
+    maxSpeed: d.maxSpeed || "—",
+    risk: (d.late + d.speed >= 10 || d.maxSpeed >= 130) ? "High" : (d.late + d.speed >= 5 || d.maxSpeed >= 100) ? "Medium" : "Low",
+    isNew: d.newThisWeek,
+    changed: !!changedThisWeek[name],
+    newDriver: NEW_DRIVERS_OVERALL.includes(name)
+  })).sort((a,b) => b.total - a.total);
+
+  const tbody = document.getElementById("driverTbody");
+  tbody.innerHTML = "";
+  driverTableData.forEach(d => {
+    const tr = document.createElement("tr");
+    if (d.risk === "High") tr.className = "high";
+    else if (d.newDriver && d.changed) tr.className = "new-driver";
+    let statusTags = "";
+    if (d.isNew) statusTags += '<span class="tag new">NEW</span>';
+    if (d.changed && !d.isNew) statusTags += '<span class="tag changed">CHANGED</span>';
+    tr.innerHTML = `
+      <td>${d.name}${statusTags}</td>
+      <td style="font-size:12px;color:#666">${d.vehicles}</td>
+      <td>${d.late}</td>
+      <td>${d.speed}</td>
+      <td><strong>${d.total}</strong></td>
+      <td>${d.maxSpeed !== "—" ? d.maxSpeed + " km/h" : "—"}</td>
+      <td class="risk-${d.risk.toLowerCase()}">${d.risk}</td>
+      <td>${d.risk === "High" ? "⚠️ Action Required" : d.risk === "Medium" ? "🟡 Monitor" : "✅ Low Risk"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // =====================================================================
+  // INCIDENT LOG
+  // =====================================================================
+  const drivers = [...new Set(expandedIncidents.map(i=>i.driver))].sort();
+  const driverSel = document.getElementById("filterDriver");
+  const weekSel = document.getElementById("filterWeek");
+  driverSel.innerHTML = '<option value="">All Drivers</option>';
+  weekSel.innerHTML = '<option value="">All Weeks</option>';
+  drivers.forEach(d => { const o = document.createElement("option"); o.value=d; o.textContent=d; driverSel.appendChild(o); });
+  [...weekOrder].reverse().forEach(w => { const o = document.createElement("option"); o.value=w; o.textContent=w; weekSel.appendChild(o); });
+
+  filterLog();
+
+  // =====================================================================
+  // CHARTS
+  // =====================================================================
+  ["chartDriverBar","chartDonut","chartVehicle","chartTrend"].forEach(id => {
+    const existing = Chart.getChart(id);
+    if (existing) existing.destroy();
+  });
+
+  const topDrivers = driverTableData.slice(0,12);
+  new Chart(document.getElementById("chartDriverBar"), {
+    type: "bar",
+    data: {
+      labels: topDrivers.map(d=>d.name.split(" ")[0]),
+      datasets: [
+        { label: "Late Night", data: topDrivers.map(d=>d.late), backgroundColor: "#EF9F27" },
+        { label: "Speeding", data: topDrivers.map(d=>d.speed), backgroundColor: "#E24B4A" }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: "top" } },
+      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  new Chart(document.getElementById("chartDonut"), {
+    type: "doughnut",
+    data: {
+      labels: ["Late Night", "Speeding"],
+      datasets: [{ data: [totalLateAll, totalSpeedAll], backgroundColor: ["#EF9F27","#E24B4A"], borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+
+  const vehicleMap = {};
+  expandedIncidents.forEach(i => { vehicleMap[i.vehicle] = (vehicleMap[i.vehicle]||0) + 1; });
+  const topVehicles = Object.entries(vehicleMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  new Chart(document.getElementById("chartVehicle"), {
+    type: "bar",
+    data: {
+      labels: topVehicles.map(v=>shortVehicle(v[0])),
+      datasets: [{ label: "Incidents", data: topVehicles.map(v=>v[1]), backgroundColor: "#378ADD" }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  const trendLate = weekOrder.map(w => expandedIncidents.filter(i=>i.week===w&&i.type==="late").length);
+  const trendSpeed = weekOrder.map(w => expandedIncidents.filter(i=>i.week===w&&i.type==="speed").length);
+  const trendLabels = weekOrder.map(w => w.replace(" 2025","").replace(" 2026","").replace("–","-"));
+  new Chart(document.getElementById("chartTrend"), {
+    type: "line",
+    data: {
+      labels: trendLabels,
+      datasets: [
+        { label: "Late Night", data: trendLate, borderColor: "#EF9F27", backgroundColor: "rgba(239,159,39,0.1)", tension: 0.3, fill: true },
+        { label: "Speeding", data: trendSpeed, borderColor: "#E24B4A", backgroundColor: "rgba(226,75,74,0.1)", tension: 0.3, fill: true }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: "top" } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
 
 function filterLog() {
   const t = document.getElementById("filterType").value;
@@ -548,7 +600,7 @@ function filterLog() {
   const w = document.getElementById("filterWeek").value;
   const filtered = expandedIncidents.filter(i =>
     (!t || i.type === t) &&
-    (!d || normName(i.driver) === d) &&
+    (!d || i.driver === d) &&
     (!w || i.week === w)
   );
   const lb = document.getElementById("logTbody");
@@ -559,105 +611,22 @@ function filterLog() {
     tr.innerHTML = `
       <td>${i.week}${i.isNew?'<span class="new-week-badge">NEW</span>':""}</td>
       <td>${i.date} — ${i.detail}</td>
-      <td>${normName(i.driver)}</td>
+      <td>${i.driver}</td>
       <td class="type-${i.type}">${i.type==="speed"?"🚨 Speeding":"🌙 Late Night"}</td>
       <td>${i.vehicle}</td>
     `;
     lb.appendChild(tr);
   });
 }
-filterLog();
 
-// =====================================================================
-// CHARTS
-// =====================================================================
-
-// --- Driver Bar Chart ---
-const topDrivers = driverTableData.slice(0,12);
-new Chart(document.getElementById("chartDriverBar"), {
-  type: "bar",
-  data: {
-    labels: topDrivers.map(d=>d.name.split(" ")[0]),
-    datasets: [
-      { label: "Late Night", data: topDrivers.map(d=>d.late), backgroundColor: "#EF9F27" },
-      { label: "Speeding", data: topDrivers.map(d=>d.speed), backgroundColor: "#E24B4A" }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: "top" } },
-    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } }
-  }
-});
-
-// --- Donut Chart ---
-new Chart(document.getElementById("chartDonut"), {
-  type: "doughnut",
-  data: {
-    labels: ["Late Night", "Speeding"],
-    datasets: [{ data: [totalLate, totalSpeed], backgroundColor: ["#EF9F27","#E24B4A"], borderWidth: 2 }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: "bottom" } }
-  }
-});
-
-// --- Vehicle Bar Chart ---
-const vehicleMap = {};
-expandedIncidents.forEach(i => {
-  if (!vehicleMap[i.vehicle]) vehicleMap[i.vehicle] = 0;
-  vehicleMap[i.vehicle]++;
-});
-const topVehicles = Object.entries(vehicleMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-new Chart(document.getElementById("chartVehicle"), {
-  type: "bar",
-  data: {
-    labels: topVehicles.map(v=>v[0].replace("Chev Utility","Chev").replace("Nissan NP","NP").replace("Opel Combo","Opel").replace("Ford Ranger","Ford").replace("Merc Actros","Actros")),
-    datasets: [{ label: "Incidents", data: topVehicles.map(v=>v[1]), backgroundColor: "#378ADD" }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-  }
-});
-
-// --- Weekly Trend Chart ---
-const weekOrder = [
-  "30 Jun–6 Jul 2025","7–13 Jul 2025","14–20 Jul 2025","21–27 Jul 2025","28 Jul–3 Aug 2025",
-  "4–10 Aug 2025","11–17 Aug 2025","25–31 Aug 2025","1–7 Sep 2025","8–14 Sep 2025",
-  "13–19 Apr 2026","20–26 Apr 2026","27 Apr–3 May 2026","4–10 May 2026","11–17 May 2026",
-  "25–31 May 2026","1–7 Jun 2026","8–14 Jun 2026","15–21 Jun 2026","22–28 Jun 2026"
-];
-const trendLate = weekOrder.map(w => expandedIncidents.filter(i=>i.week===w&&i.type==="late").length);
-const trendSpeed = weekOrder.map(w => expandedIncidents.filter(i=>i.week===w&&i.type==="speed").length);
-const trendLabels = weekOrder.map(w => w.replace(" 2025","").replace(" 2026","").replace("–","-"));
-new Chart(document.getElementById("chartTrend"), {
-  type: "line",
-  data: {
-    labels: trendLabels,
-    datasets: [
-      { label: "Late Night", data: trendLate, borderColor: "#EF9F27", backgroundColor: "rgba(239,159,39,0.1)", tension: 0.3, fill: true },
-      { label: "Speeding", data: trendSpeed, borderColor: "#E24B4A", backgroundColor: "rgba(226,75,74,0.1)", tension: 0.3, fill: true }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: "top" } },
-    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-  }
-});
-
-// =====================================================================
-// TAB SWITCHING
-// =====================================================================
 function showTab(id) {
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
   document.getElementById("tab-"+id).classList.add("active");
   event.target.classList.add("active");
 }
+
+loadDashboard();
 </script>
 </body>
 </html>
