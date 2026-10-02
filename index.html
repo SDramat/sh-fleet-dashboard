@@ -3,235 +3,412 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sustainable Heating · Vehicle Transgressions Dashboard</title>
+<title>Sustainable Heating — Fleet Transgressions Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
-  body { background:#f0f2f5; color:#222; }
-  .header { background:linear-gradient(135deg,#1F5C8B 0%,#2E75B6 100%); color:#fff; padding:28px 32px; }
-  .header h1 { font-size:24px; font-weight:700; }
-  .header p { opacity:.85; margin-top:6px; font-size:14px; }
-  .container { max-width:1200px; margin:0 auto; padding:24px 20px 60px; }
-  .card { background:#fff; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,.08); padding:20px; }
-  .banner { background:#FFF8E7; border:1px solid #F0D48A; border-radius:12px; padding:18px 20px; margin-bottom:24px; }
-  .banner h2 { font-size:16px; color:#8A6100; margin-bottom:12px; }
-  .newcards { display:flex; flex-wrap:wrap; gap:14px; }
-  .newcard { background:#fff; border-radius:10px; padding:14px 16px; min-width:230px; flex:1; box-shadow:0 1px 3px rgba(0,0,0,.07); border-left:5px solid #E24B4A; }
-  .newcard.green { border-left-color:#3CB371; }
-  .newcard h3 { font-size:15px; margin-bottom:4px; }
-  .newcard p { font-size:13px; color:#555; line-height:1.45; }
-  .badge { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle; }
-  .badge.repeat { background:#FDEBC8; color:#8A6100; }
-  .badge.improve { background:#DFF5E7; color:#1E7A45; }
-  .badge.escal { background:#FBDDDC; color:#A32C2B; }
-  .compare { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
-  @media (max-width:800px){ .compare{grid-template-columns:1fr;} .metrics{flex-wrap:wrap;} }
-  .compare h2 { font-size:16px; color:#1F5C8B; margin-bottom:12px; }
-  table { width:100%; border-collapse:collapse; font-size:13.5px; }
-  th { text-align:left; padding:8px 10px; background:#f5f7fa; color:#444; font-weight:600; border-bottom:2px solid #e3e7ee; }
-  td { padding:8px 10px; border-bottom:1px solid #eef1f5; }
-  .up { color:#C0392B; font-weight:700; }
-  .down { color:#1E7A45; font-weight:700; }
-  .chg-list li { list-style:none; padding:7px 0; border-bottom:1px solid #eef1f5; font-size:13.5px; line-height:1.4; }
-  .metrics { display:flex; gap:16px; margin-bottom:24px; }
-  .metric { flex:1; background:#fff; border-radius:12px; padding:18px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08); min-width:150px; }
-  .metric .num { font-size:30px; font-weight:800; color:#1F5C8B; }
-  .metric .lbl { font-size:12.5px; color:#666; margin-top:4px; }
-  .metric .delta { font-size:12px; font-weight:700; margin-top:4px; }
-  .tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
-  .tab { padding:10px 18px; background:#fff; border:1px solid #dde3ea; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; color:#48566a; }
-  .tab.active { background:#1F5C8B; color:#fff; border-color:#1F5C8B; }
-  .pane { display:none; }
-  .pane.active { display:block; }
-  .charts2 { display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:20px; }
-  @media (max-width:800px){ .charts2{grid-template-columns:1fr;} }
-  .tag { display:inline-block; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:9px; }
-  .tag.new { background:#FDEBC8; color:#8A6100; }
-  .risk-high { color:#C0392B; font-weight:700; }
-  .risk-med { color:#B9770E; font-weight:700; }
-  .risk-low { color:#1E7A45; font-weight:700; }
-  .hl { background:#FFF8E7; }
-  select { padding:7px 10px; border:1px solid #ccd4dd; border-radius:7px; font-size:13.5px; margin-right:10px; background:#fff; }
-  .lognew { background:#FDEBC8; color:#8A6100; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:9px; }
-  .footer { text-align:center; color:#8a93a0; font-size:12px; margin-top:36px; }
-  .note { font-size:12px; color:#777; margin-top:10px; line-height:1.45; }
+  :root{
+    --bg:#0f1420; --panel:#161d2e; --panel2:#1d2538; --border:#2a3350;
+    --text:#e8ecf5; --muted:#8e9bbd; --accent:#4f8cff; --green:#34d399;
+    --amber:#fbbf24; --red:#f87171; --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 16px 60px;}
+  .banner{background:linear-gradient(135deg,#1b2440,#141a2c);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
+  .banner h1{margin:0 0 4px;font-size:1.5rem;}
+  .banner p{margin:0;color:var(--muted);font-size:0.9rem;}
+  .callouts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+  @media (max-width:720px){.callouts{grid-template-columns:1fr;}}
+  .callout{border-radius:var(--radius);padding:16px 18px;font-size:0.92rem;border:1px solid var(--border);}
+  .callout.watch{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.35);}
+  .callout.good{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.35);}
+  .callout b{display:block;margin-bottom:6px;font-size:0.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  @media (max-width:860px){.metrics{grid-template-columns:repeat(2,1fr);}}
+  .metric{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .metric .label{color:var(--muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  .metric .value{font-size:1.9rem;font-weight:700;margin:4px 0;}
+  .metric .delta{font-size:0.82rem;}
+  .delta.up{color:var(--red);} .delta.down{color:var(--green);} .delta.flat{color:var(--muted);}
+  .section{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;}
+  .section h2{margin:0 0 14px;font-size:1.05rem;}
+  table{width:100%;border-collapse:collapse;font-size:0.86rem;}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:0.72rem;letter-spacing:.04em;}
+  tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:600;}
+  .badge.improve{background:rgba(52,211,153,0.15);color:var(--green);}
+  .badge.watch{background:rgba(251,191,36,0.15);color:var(--amber);}
+  .badge.flat{background:rgba(142,155,189,0.15);color:var(--muted);}
+  .badge.high{background:rgba(248,113,113,0.15);color:var(--red);}
+  .badge.medium{background:rgba(251,191,36,0.15);color:var(--amber);}
+  .badge.low{background:rgba(52,211,153,0.15);color:var(--green);}
+  .badge.new{background:rgba(79,140,255,0.18);color:var(--accent);}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:999px;cursor:pointer;font-size:0.85rem;}
+  .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:860px){.charts-grid{grid-template-columns:1fr;}}
+  .chart-box{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;height:300px;}
+  .filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  select,input[type=text]{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:0.85rem;}
+  .footer{text-align:center;color:var(--muted);font-size:0.78rem;margin-top:30px;}
+  .scroll-x{overflow-x:auto;}
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>Vehicle Transgressions Dashboard</h1>
-  <p>Sustainable Heating fleet · Latest week: 17 – 23 September 2026 (reported 25 Sep) · Live from Supabase (Business project) · Speeding &amp; late-night driving</p>
-</div>
-<div class="container">
+<div class="wrap">
 
-  <!-- NEW THIS WEEK -->
   <div class="banner">
-    <h2>⚠ New This Week (17 – 23 September 2026)</h2>
-    <div class="newcards">
-      <div class="newcard">
-        <h3>Ben Alla <span class="badge repeat">Repeat</span></h3>
-        <p>Merc Actros CEY63155 · 8 speeding incidents this week (95–112 km/h, limit 95). Same pattern as last week (8 incidents) — no improvement over 2 straight weeks. Note: Actros speedometer previously reported faulty (Jeanne, 29 Jun) — governor/speedo check recommended.</p>
-      </div>
-      <div class="newcard">
-        <h3>Kanyerere (Wise) <span class="badge repeat">Repeat</span></h3>
-        <p>13 late-night trips this week across 2 vehicles (CEY48451, CEY19309), up from 10 last week — several trips 5–6 hours long. Escalating frequency, worth a direct conversation.</p>
-      </div>
-      <div class="newcard green">
-        <h3>Fleet-wide <span class="badge improve">Improvement</span></h3>
-        <p>42 incidents this week vs 80 last week — a ~48% drop, driven by far fewer late-night trips (31 vs 71). Speeding ticked up slightly (11 vs 9), concentrated in Ben Alla and a new one-day cluster from Marius Niemand.</p>
-      </div>
+    <h1>Sustainable Heating — Fleet Transgressions Dashboard</h1>
+    <p>Latest week: 24&ndash;30 Sep 2026 &nbsp;&middot;&nbsp; Reported 1 Oct 2026</p>
+  </div>
+
+  <div class="callouts">
+    <div class="callout watch">
+      <b>New This Week</b>
+      Ben Alla (CEY63155) logged 6 more heavy-vehicle speeding incidents this week — 96&ndash;111&nbsp;km/h against a 95&nbsp;km/h limit — the 2nd straight week of persistent over-limit running on the same vehicle (9 incidents last week).
+    </div>
+    <div class="callout good">
+      <b>Improving</b>
+      Kanyerere (Wise) down from 13 incidents last week to 5 this week — late-night trips cut by more than half across both assigned vehicles.
     </div>
   </div>
 
-  <!-- WEEK ON WEEK -->
-  <div class="compare">
-    <div class="card">
-      <h2>Week-on-Week Comparison</h2>
-      <table>
-        <tr><th>Week</th><th>Late-night</th><th>Speeding</th><th>Total</th><th>Δ</th></tr>
-        <tr><td>27 Aug–2 Sep</td><td>42</td><td>6</td><td>48</td><td>—</td></tr>
-<tr><td>3–9 Sep</td><td>68</td><td>0</td><td>68</td><td><span class="up">▲ +20</span></td></tr>
-<tr><td>10–16 Sep</td><td>71</td><td>9</td><td>80</td><td><span class="up">▲ +12</span></td></tr>
-<tr class="hl"><td><b>17–23 Sep (new)</b></td><td>31</td><td>11</td><td>42</td><td><span class="down">▼ −38</span></td></tr>
-
-      </table>
-      <p class="note">Best late-night week in 8+ weeks; speeding needs a watch given Ben Alla and the new Niemand cluster.</p>
-    </div>
-    <div class="card">
-      <h2>Per-Driver Change (this week vs last week)</h2>
-      <ul class="chg-list">
-        <li><b>Ben Alla</b> — 8 → 9 incidents <span class="badge escal">Watch</span> <span class="badge repeat">Repeat</span> — escalating heavy-vehicle speeding, 2 weeks running</li>
-<li><b>Kanyerere (Wise)</b> — 10 → 13 incidents <span class="badge escal">Watch</span> <span class="badge repeat">Repeat</span> — escalating late-night use, 2 vehicles</li>
-<li><b>Ricardo Govender</b> — 30 → 0 incidents <span class="badge improve">Improvement</span></li>
-<li><b>Siseko Ngxumeshe</b> — 5 → 2 incidents <span class="badge improve">Improvement</span></li>
-<li><b>Nicolas Naidoo</b> — 4 → 2 incidents <span class="badge improve">Improvement</span></li>
-<li><b>Gavin Windvogel</b> — 4 → 0 incidents <span class="badge improve">Improvement</span></li>
-<li><b>Edgar Nyomupfukudza</b> — 2 → 1 incident <span class="badge improve">Improvement</span></li>
-<li><b>Kreasen Chetty</b> — 2 → 0 incidents <span class="badge improve">Improvement</span></li>
-<li><b>Lionel Africa</b> — 4 → 1 incident <span class="badge improve">Improvement</span></li>
-<li><b>Nardino Govender</b> — 1 → 0 incidents <span class="badge improve">Improvement</span></li>
-
-      </ul>
-    </div>
-  </div>
-
-  <!-- METRICS -->
   <div class="metrics">
-    <div class="metric"><div class="num">42</div><div class="lbl">Total incidents this week</div><div class="delta down">▼ −38 vs last week</div></div>
-    <div class="metric"><div class="num">31</div><div class="lbl">Late-night trips</div><div class="delta down">▼ −40</div></div>
-    <div class="metric"><div class="num">11</div><div class="lbl">Speeding incidents</div><div class="delta up">▲ +2</div></div>
-    <div class="metric"><div class="num">6</div><div class="lbl">Repeat offenders active</div><div class="delta down">▼ −5</div></div>
+    <div class="metric">
+      <div class="label">Total Incidents</div>
+      <div class="value">53</div>
+      <div class="delta up">&#9650; +11 vs last week (42)</div>
+    </div>
+    <div class="metric">
+      <div class="label">Late-Night Trips</div>
+      <div class="value">40</div>
+      <div class="delta up">&#9650; +9 vs last week (31)</div>
+    </div>
+    <div class="metric">
+      <div class="label">Speeding</div>
+      <div class="value">13</div>
+      <div class="delta up">&#9650; +2 vs last week (11)</div>
+    </div>
+    <div class="metric">
+      <div class="label">Repeat Offenders</div>
+      <div class="value">7</div>
+      <div class="delta flat">named drivers flagged in both weeks</div>
+    </div>
   </div>
 
-  <!-- TABS -->
+  <div class="section">
+    <h2>Week-on-Week Comparison (last 4 weeks)</h2>
+    <div class="scroll-x">
+    <table>
+      <thead><tr><th>Week</th><th>Speeding</th><th>Late-Night</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td>24&ndash;30 Sep 2026 (latest)</td><td>13</td><td>40</td><td>53</td></tr>
+        <tr><td>17&ndash;23 Sep 2026</td><td>11</td><td>31</td><td>42</td></tr>
+        <tr><td>10&ndash;16 Sep 2026</td><td>9</td><td>71</td><td>80</td></tr>
+        <tr><td>3&ndash;9 Sep 2026</td><td>0</td><td>68</td><td>68</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Per-Driver Change — This Week vs Last Week (repeat offenders)</h2>
+    <div class="scroll-x">
+    <table>
+      <thead><tr><th>Driver</th><th>Last Week</th><th>This Week</th><th>Change</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Ben Alla</td><td>9</td><td>6</td><td>&minus;3</td><td><span class="badge watch">Watch — still high</span></td></tr>
+        <tr><td>Kanyerere (Wise)</td><td>13</td><td>5</td><td>&minus;8</td><td><span class="badge improve">Improving</span></td></tr>
+        <tr><td>Atwell Luvuno</td><td>6</td><td>3</td><td>&minus;3</td><td><span class="badge improve">Improving</span></td></tr>
+        <tr><td>Siseko Ngxumeshe</td><td>2</td><td>2</td><td>0</td><td><span class="badge flat">Flat</span></td></tr>
+        <tr><td>Siyabonga Jack</td><td>1</td><td>2</td><td>+1</td><td><span class="badge watch">Watch</span></td></tr>
+        <tr><td>Edgar Nyomupfukudza</td><td>1</td><td>3</td><td>+2</td><td><span class="badge watch">Watch</span></td></tr>
+        <tr><td>Lionel Africa</td><td>1</td><td>2</td><td>+1</td><td><span class="badge watch">Watch</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
   <div class="tabs">
-    <div class="tab active" data-pane="overview">Overview</div>
-    <div class="tab" data-pane="drivers">By Driver</div>
-    <div class="tab" data-pane="log">Incident Log</div>
-    <div class="tab" data-pane="trend">Weekly Trend</div>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="bydriver">By Driver</button>
+    <button class="tab-btn" data-tab="log">Incident Log</button>
+    <button class="tab-btn" data-tab="trend">Weekly Trend</button>
   </div>
 
-  <div class="pane active" id="overview">
-    <div class="charts2">
-      <div class="card"><h2 style="font-size:16px;color:#1F5C8B;margin-bottom:10px;">Incidents by driver (last 8 weeks)</h2><canvas id="driverBar" height="240"></canvas></div>
-      <div class="card"><h2 style="font-size:16px;color:#1F5C8B;margin-bottom:10px;">Type split (this week)</h2><canvas id="typeDonut" height="240"></canvas></div>
-    </div>
-    <div class="card"><h2 style="font-size:16px;color:#1F5C8B;margin-bottom:10px;">Top vehicles by incidents (last 8 weeks)</h2><canvas id="vehicleBar" height="120"></canvas></div>
-  </div>
-
-  <div class="pane" id="drivers">
-    <div class="card">
-      <table id="driverTable">
-        <tr><th>Driver</th><th>Vehicle(s)</th><th>Late-night</th><th>Speeding</th><th>Total</th><th>Max speed</th><th>Risk</th><th>Status</th></tr>
-        <tr><td>Unknown (tag)</td><td>CEY19891 / CEY22432 / CEY29293 / CEY34027 / CEY57306 / CEY63155 / CEY63250 / CEY69850 / CEY71650 / CEY72487</td><td>91</td><td>0</td><td>91</td><td>94 km/h</td><td class="risk-high">High</td><td>Quiet since 2026-09-22</td></tr>
-<tr><td>Kanyerere (Wise)</td><td>CEY19309 / CEY48451</td><td>87</td><td>0</td><td>87</td><td>119 km/h</td><td class="risk-high">High</td><td>13 this week (was 10 last week)</td></tr>
-<tr><td>Ben Alla</td><td>CEY63155 / CEY78059</td><td>11</td><td>31</td><td>42</td><td>112 km/h</td><td class="risk-high">High</td><td>9 this week (was 8 last week)</td></tr>
-<tr><td>Ricardo Govender</td><td>CEY19762 / CEY63250 / CEY85300</td><td>36</td><td>0</td><td>36</td><td>111 km/h</td><td class="risk-high">High</td><td>0 this week (was 30 last week)</td></tr>
-<tr><td>Kreasen Chetty</td><td>CEY63250 / CEY72487 / CEY85300</td><td>21</td><td>3</td><td>24</td><td>133 km/h</td><td class="risk-high">High</td><td>0 this week (was 2 last week)</td></tr>
-<tr><td>Edgar Nyomupfukudza</td><td>CEY19891 / CEY69850</td><td>21</td><td>0</td><td>21</td><td>86 km/h</td><td class="risk-high">High</td><td>1 this week (was 2 last week)</td></tr>
-<tr><td>Nardino Govender</td><td>CEY11873</td><td>2</td><td>12</td><td>14</td><td>149 km/h</td><td class="risk-high">High</td><td>0 this week (was 1 last week)</td></tr>
-<tr><td>Nicolas Naidoo</td><td>CEY34027 / CEY63250 / CEY85300</td><td>14</td><td>0</td><td>14</td><td>115 km/h</td><td class="risk-high">High</td><td>2 this week (was 4 last week)</td></tr>
-<tr><td>Godwin Aughust</td><td>CEY22432</td><td>12</td><td>1</td><td>13</td><td>120 km/h</td><td class="risk-high">High</td><td>Quiet since 2026-08-11</td></tr>
-<tr><td>Lovemore</td><td>CEY28255 / CEY29293 / CEY72487</td><td>12</td><td>0</td><td>12</td><td>115 km/h</td><td class="risk-high">High</td><td>Quiet since 2026-08-18</td></tr>
-<tr><td>Siseko Ngxumeshe</td><td>CEY19762</td><td>11</td><td>0</td><td>11</td><td>99 km/h</td><td class="risk-med">Medium</td><td>2 this week (was 5 last week)</td></tr>
-<tr><td>Sifiso Gwiji</td><td>CEY19762</td><td>7</td><td>3</td><td>10</td><td>123 km/h</td><td class="risk-high">High</td><td>Quiet since 2026-09-07</td></tr>
-<tr><td>Divan Bester</td><td>CEY57306 / CEY74727</td><td>9</td><td>1</td><td>10</td><td>125 km/h</td><td class="risk-high">High</td><td>2 this week (new this week)</td></tr>
-<tr><td>Gavin Windvogel</td><td>CEY22432 / CEY72487</td><td>8</td><td>0</td><td>8</td><td>110 km/h</td><td class="risk-high">High</td><td>0 this week (was 4 last week)</td></tr>
-<tr><td>Atwell Luvuno</td><td>CEY34027</td><td>6</td><td>0</td><td>6</td><td>68 km/h</td><td class="risk-low">Low</td><td>6 this week (new this week)</td></tr>
-<tr><td>Lionel Africa</td><td>CEY37921</td><td>5</td><td>0</td><td>5</td><td>113 km/h</td><td class="risk-high">High</td><td>1 this week (was 4 last week)</td></tr>
-<tr><td>Marius Niemand</td><td>CEY57306</td><td>0</td><td>2</td><td>2</td><td>129 km/h</td><td class="risk-high">High</td><td>2 this week (new this week)</td></tr>
-<tr><td>Siyabonga Jack</td><td>CEY78059</td><td>0</td><td>1</td><td>1</td><td>120 km/h</td><td class="risk-high">High</td><td>1 this week (new this week)</td></tr>
-
-      </table>
-      <p class="note">Window: 30 Jul – 23 Sep 2026 (8 weeks), live from Supabase Business project (iyvenvbfsfywkuptuaif). "Unknown (tag)" = trips on an untagged/unassigned Digit tag — admin follow-up needed to assign a driver. Some legacy rows carry short-form driver names (e.g. "Godwin" vs "Godwin Aughust") from before Digit tag cleanup; these have not been merged here to avoid guessing identity — flagged for Steven to reconcile in Supabase driver_tags.</p>
+  <div id="overview" class="tab-panel active section">
+    <h2>Overview — This Week</h2>
+    <div class="charts-grid">
+      <div class="chart-box"><canvas id="driverChart"></canvas></div>
+      <div class="chart-box"><canvas id="typeChart"></canvas></div>
+      <div class="chart-box" style="grid-column:1/-1;"><canvas id="vehicleChart"></canvas></div>
     </div>
   </div>
 
-  <div class="pane" id="log">
-    <div class="card">
-      <div style="margin-bottom:12px;">
-        <select id="fType"><option value="">All types</option><option value="speed">Speeding</option><option value="late">Late-night</option></select>
-        <select id="fDriver"><option value="">All drivers</option></select>
-      </div>
-      <table id="logTable">
-        <tr><th>Week</th><th>Date / detail</th><th>Driver</th><th>Type</th><th>Vehicle</th><th></th></tr>
-      </table>
+  <div id="bydriver" class="tab-panel section">
+    <h2>By Driver — 8-Week Rolling</h2>
+    <div class="scroll-x">
+    <table id="driverTable">
+      <thead><tr><th>Driver</th><th>Vehicle(s)</th><th>Late-Night</th><th>Speeding</th><th>Total</th><th>Max Speed</th><th>Risk</th></tr></thead>
+      <tbody></tbody>
+    </table>
     </div>
   </div>
 
-  <div class="pane" id="trend">
-    <div class="card">
-      <h2 style="font-size:16px;color:#1F5C8B;margin-bottom:10px;">Weekly incident trend (8 weeks, 30 Jul – 23 Sep 2026)</h2>
-      <canvas id="trendLine" height="130"></canvas>
-      <p class="note">Live from Supabase Business project. Deduplicated (exact-duplicate sync rows removed) before counting.</p>
+  <div id="log" class="tab-panel section">
+    <h2>Incident Log — Current &amp; Previous Week</h2>
+    <div class="filters">
+      <select id="filterDriver"><option value="">All drivers</option></select>
+      <select id="filterType"><option value="">All types</option><option value="speeding">Speeding</option><option value="late_night">Late-night</option></select>
+      <select id="filterWeek"><option value="">Both weeks</option><option value="current">This week</option><option value="previous">Last week</option></select>
+    </div>
+    <div class="scroll-x">
+    <table id="logTable">
+      <thead><tr><th>Date</th><th>Driver</th><th>Vehicle</th><th>Type</th><th>Detail</th><th>Max Speed</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
     </div>
   </div>
 
-  <div class="footer">Sustainable Heating · Vehicle Transgressions Dashboard · Generated by Jarvis · 25 September 2026 · Confidential — Internal Distribution</div>
+  <div id="trend" class="tab-panel section">
+    <h2>Weekly Trend — 8 Weeks</h2>
+    <div class="chart-box" style="height:360px;"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <div class="footer">Generated by Jarvis &middot; 1 Oct 2026 &middot; Confidential &mdash; Internal Distribution</div>
 </div>
 
 <script>
-const incidents = [["10–16 Sep", "Late-night trip: 03:56:35 to 03:58:49 · 29 km/h", "Ricardo Govender", "late", "CEY85300", false], ["10–16 Sep", "Speeding: 104 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", false], ["10–16 Sep", "Late-night trip: 22:36:20 to 22:41:03 · 7 km/h", "Ricardo Krige", "late", "CEY78059", false], ["10–16 Sep", "Late-night trip: 03:26:44 to 03:54:35 · 80 km/h", "Ricardo Govender", "late", "CEY85300", false], ["10–16 Sep", "Late-night trip: 00:00:26 to 02:16:18 · 80 km/h", "Ricardo Govender", "late", "CEY85300", false], ["10–16 Sep", "Late-night trip: 00:01:47 to 00:01:47 · 0 km/h", "Nicolas Naidoo", "late", "CEY63250", false], ["10–16 Sep", "Late-night trip: 23:38:47 to 23:39:20 · 16 km/h", "Unknown (tag)", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 20:06:36 to 22:52:33 · 78 km/h", "Kanyerere (Wise)", "late", "CEY48451", false], ["10–16 Sep", "Speeding: 104 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", false], ["10–16 Sep", "Speeding: 103 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", false], ["10–16 Sep", "Late-night trip: 22:56:31 to 23:11:45 · 62 km/h", "Kanyerere (Wise)", "late", "CEY19309", false], ["10–16 Sep", "Late-night trip: 20:55:49 to 22:00:10 · 98 km/h", "Gavin Windvogel", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 22:13:48 to 22:18:44 · 47 km/h", "Gavin Windvogel", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 22:36:15 to 22:37:09 · 11 km/h", "Kreasen Chetty", "late", "CEY85300", false], ["10–16 Sep", "Late-night trip: 00:52:22 to 00:52:26 · 11 km/h", "Unknown (tag)", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 03:34:52 to 03:39:23 · 6 km/h", "Unknown (tag)", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 21:29:04 to 22:07:24 · 63 km/h", "Gavin Windvogel", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 00:25:18 to 00:25:22 · 12 km/h", "Unknown (tag)", "late", "CEY22432", false], ["10–16 Sep", "Late-night trip: 22:43:12 to 22:53:14 · 60 km/h", "Lionel Africa", "late", "CEY37921", false], ["10–16 Sep", "Late-night trip: 21:37:00 to 23:59:44 · 79 km/h", "Kanyerere (Wise)", "late", "CEY48451", false], ["10–16 Sep", "Speeding: 120 km/h (light vehicle, limit 120)", "Nardino Govender", "speed", "CEY11873", false], ["10–16 Sep", "Late-night trip: 21:56:06 to 22:28:53 · 63 km/h", "Lionel Africa", "late", "CEY37921", false], ["10–16 Sep", "Late-night trip: 22:01:52 to 22:10:55 · 79 km/h", "Siseko Ngxumeshe", "late", "CEY19762", false], ["10–16 Sep", "Late-night trip: 22:11:58 to 22:23:18 · 74 km/h", "Siseko Ngxumeshe", "late", "CEY19762", false], ["10–16 Sep", "Late-night trip: 22:36:09 to 22:51:45 · 78 km/h", "Siseko Ngxumeshe", "late", "CEY19762", false], ["10–16 Sep", "Late-night trip: 22:59:21 to 23:06:32 · 73 km/h", "Siseko Ngxumeshe", "late", "CEY19762", false], ["10–16 Sep", "Late-night trip: 23:34:51 to 23:59:46 · 72 km/h", "Unknown (tag)", "late", "CEY19891", false], ["10–16 Sep", "Late-night trip: 01:15:11 to 01:28:18 · 55 km/h", "Lionel Africa", "late", "CEY37921", false], ["10–16 Sep", "Late-night trip: 01:33:15 to 01:37:27 · 17 km/h", "Lionel Africa", "late", "CEY37921", false], ["10–16 Sep", "Late-night trip: 00:00:05 to 02:01:16 · 79 km/h", "Kanyerere (Wise)", "late", "CEY48451", false], ["10–16 Sep", "Late-night trip: 19:14:12 to 22:16:52 · 78 km/h", "Kanyerere (Wise)", "late", "CEY48451", false], ["10–16 Sep", "Late-night trip: 21:57:12 to 22:08:33 · 89 km/h", "Ricardo Govender", "late", "CEY85300", false], ["10–16 Sep", "Late-night trip: 14:33:38 to 23:19:32 · 85 km/h", "Edgar Nyomupfukudza", "late", "CEY69850", false], ["10–16 Sep", "Late-night trip: 23:21:18 to 23:29:34 · 5 km/h", "Edgar Nyomupfukudza", "late", "CEY69850", false], ["10–16 Sep", "Speeding: 96 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", false], ["10–16 Sep", "Speeding: 106 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", false], ["10–16 Sep", "Late-night trip: 02:09:06 to 02:40:19 · 51 km/h", "Kanyerere (Wise)", "late", "CEY19309", false], ["10–16 Sep", "Late-night trip: 21:57:12 to 22:12:48 · 99 km/h", "Ricardo Govender", "late", "CEY85300", false], ["10–16 Sep", "Late-night trip: 22:19:59 to 22:47:24 · 52 km/h", "Kanyerere (Wise)", "late", "CEY19309", false], ["10–16 Sep", "Speeding: 102 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", false], ["10–16 Sep", "Late-night trip: 00:15:17 to 01:07:33 · 99 km/h", "Siseko Ngxumeshe", "late", "CEY19762", false], ["10–16 Sep", "Late-night trip: 00:00:07 to 00:18:31 · 65 km/h", "Unknown (tag)", "late", "CEY19891", false], ["10–16 Sep", "Late-night trip: 00:18:02 to 00:18:55 · 5 km/h", "Unknown (tag)", "late", "CEY71650", false], ["10–16 Sep", "Late-night trip: 00:25:33 to 00:25:33 · 0 km/h", "Unknown (tag)", "late", "CEY71650", false], ["10–16 Sep", "Late-night trip: 00:26:46 to 00:26:46 · 0 km/h", "Unknown (tag)", "late", "CEY71650", false], ["10–16 Sep", "Late-night trip: 18:06:35 to 23:41:31 · 78 km/h", "Kanyerere (Wise)", "late", "CEY48451", false], ["10–16 Sep", "Late-night trip: 23:47:44 to 23:59:44 · 46 km/h", "Kanyerere (Wise)", "late", "CEY19309", false], ["17–23 Sep", "Speeding: 110 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Late-night trip: 22:15:49 to 23:04:20 · 77 km/h", "Unknown (tag)", "late", "CEY19891", true], ["17–23 Sep", "Late-night trip: 19:41:52 to 22:08:23 · 80 km/h", "Edgar Nyomupfukudza", "late", "CEY69850", true], ["17–23 Sep", "Late-night trip: 00:00:05 to 00:20:33 · 107 km/h", "Kanyerere (Wise)", "late", "CEY19309", true], ["17–23 Sep", "Late-night trip: 23:02:28 to 23:16:46 · 64 km/h", "Siseko Ngxumeshe", "late", "CEY19762", true], ["17–23 Sep", "Late-night trip: 21:48:03 to 22:12:10 · 93 km/h", "Kanyerere (Wise)", "late", "CEY19309", true], ["17–23 Sep", "Speeding: 120 km/h (light vehicle, limit 120)", "Siyabonga Jack", "speed", "CEY78059", true], ["17–23 Sep", "Late-night trip: 22:52:54 to 23:32:51 · 40 km/h", "Siseko Ngxumeshe", "late", "CEY19762", true], ["17–23 Sep", "Late-night trip: 21:49:23 to 22:02:52 · 55 km/h", "Nicolas Naidoo", "late", "CEY63250", true], ["17–23 Sep", "Late-night trip: 06:42:03 to 23:56:44 · 80 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Speeding: 95 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Late-night trip: 20:16:29 to 22:19:26 · 83 km/h", "Ben Alla", "late", "CEY63155", true], ["17–23 Sep", "Late-night trip: 00:01:14 to 00:01:14 · 0 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Late-night trip: 23:54:21 to 23:59:40 · 6 km/h", "Atwell Luvuno", "late", "CEY34027", true], ["17–23 Sep", "Late-night trip: 00:05:18 to 00:48:32 · 104 km/h", "Kanyerere (Wise)", "late", "CEY19309", true], ["17–23 Sep", "Late-night trip: 23:48:04 to 23:51:47 · 9 km/h", "Atwell Luvuno", "late", "CEY34027", true], ["17–23 Sep", "Late-night trip: 23:24:17 to 23:45:14 · 68 km/h", "Atwell Luvuno", "late", "CEY34027", true], ["17–23 Sep", "Late-night trip: 00:15:47 to 00:15:51 · 0 km/h", "Unknown (tag)", "late", "CEY34027", true], ["17–23 Sep", "Late-night trip: 22:39:37 to 22:50:17 · 76 km/h", "Divan Bester", "late", "CEY57306", true], ["17–23 Sep", "Late-night trip: 22:52:35 to 23:02:50 · 59 km/h", "Divan Bester", "late", "CEY57306", true], ["17–23 Sep", "Late-night trip: 22:08:13 to 22:24:28 · 94 km/h", "Nicolas Naidoo", "late", "CEY63250", true], ["17–23 Sep", "Late-night trip: 00:00:01 to 00:15:29 · 31 km/h", "Atwell Luvuno", "late", "CEY34027", true], ["17–23 Sep", "Late-night trip: 00:17:56 to 00:21:54 · 30 km/h", "Atwell Luvuno", "late", "CEY34027", true], ["17–23 Sep", "Late-night trip: 03:15:59 to 04:20:02 · 113 km/h", "Lionel Africa", "late", "CEY37921", true], ["17–23 Sep", "Late-night trip: 18:39:03 to 23:59:42 · 83 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Speeding: 99 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Speeding: 108 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Late-night trip: 22:04:04 to 22:05:20 · 15 km/h", "Unknown (tag)", "late", "CEY71650", true], ["17–23 Sep", "Late-night trip: 00:00:03 to 00:03:27 · 12 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Late-night trip: 16:02:01 to 22:12:09 · 79 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Speeding: 95 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Speeding: 112 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Late-night trip: 00:09:36 to 00:47:38 · 106 km/h", "Kanyerere (Wise)", "late", "CEY19309", true], ["17–23 Sep", "Late-night trip: 22:18:16 to 22:47:02 · 61 km/h", "Kanyerere (Wise)", "late", "CEY19309", true], ["17–23 Sep", "Speeding: 124 km/h (light vehicle, limit 120)", "Marius Niemand", "speed", "CEY57306", true], ["17–23 Sep", "Speeding: 129 km/h (light vehicle, limit 120)", "Marius Niemand", "speed", "CEY57306", true], ["17–23 Sep", "Late-night trip: 17:24:20 to 23:04:35 · 80 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Late-night trip: 23:04:58 to 23:09:06 · 0 km/h", "Kanyerere (Wise)", "late", "CEY48451", true], ["17–23 Sep", "Speeding: 101 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Speeding: 108 km/h (heavy vehicle, limit 95)", "Ben Alla", "speed", "CEY63155", true], ["17–23 Sep", "Late-night trip: 23:12:43 to 23:56:38 · 119 km/h", "Kanyerere (Wise)", "late", "CEY19309", true], ["17–23 Sep", "Late-night trip: 22:03:46 to 22:04:43 · 20 km/h", "Atwell Luvuno", "late", "CEY34027", true]];
+const driverRows = [
+ {driver:"Unknown",vehicles:"CEY19891, CEY22432, CEY29293, CEY34027, CEY57306, CEY63155, CEY63250, CEY69850, CEY71650, CEY72487",late_night:95,speeding:0,total:95,max_speed:94},
+ {driver:"Kanyerere (Wise)",vehicles:"CEY19309, CEY48451",late_night:81,speeding:0,total:81,max_speed:119},
+ {driver:"Ben Alla",vehicles:"CEY63155, CEY78059",late_night:11,speeding:37,total:48,max_speed:112},
+ {driver:"Ricardo Govender",vehicles:"CEY63250, CEY85300",late_night:39,speeding:0,total:39,max_speed:110},
+ {driver:"Edgar Nyomupfukudza",vehicles:"CEY19891, CEY69850",late_night:24,speeding:0,total:24,max_speed:86},
+ {driver:"Kreasen Chetty",vehicles:"CEY63250, CEY72487, CEY85300",late_night:12,speeding:3,total:15,max_speed:133},
+ {driver:"Siseko Ngxumeshe",vehicles:"CEY19762",late_night:13,speeding:0,total:13,max_speed:99},
+ {driver:"Godwin Aughust",vehicles:"CEY22432",late_night:13,speeding:0,total:13,max_speed:113},
+ {driver:"Nicolas Naidoo",vehicles:"CEY34027, CEY63250, CEY85300",late_night:13,speeding:0,total:13,max_speed:115},
+ {driver:"Lovemore",vehicles:"CEY28255, CEY29293, CEY72487",late_night:12,speeding:0,total:12,max_speed:115},
+ {driver:"Divan Bester",vehicles:"CEY57306, CEY74727",late_night:9,speeding:1,total:10,max_speed:125},
+ {driver:"Atwell Luvuno",vehicles:"CEY34027",late_night:9,speeding:0,total:9,max_speed:92},
+ {driver:"Gavin Windvogel",vehicles:"CEY22432, CEY72487",late_night:8,speeding:0,total:8,max_speed:110},
+ {driver:"Sifiso Gwiji",vehicles:"CEY19762",late_night:4,speeding:3,total:7,max_speed:123},
+ {driver:"Lionel Africa",vehicles:"CEY37921",late_night:7,speeding:0,total:7,max_speed:113},
+ {driver:"Luwayne Potberg",vehicles:"CEY37921, CEY72487",late_night:0,speeding:6,total:6,max_speed:125},
+ {driver:"Riaa Rafferty",vehicles:"CEY63155, CEY72487",late_night:0,speeding:5,total:5,max_speed:122},
+ {driver:"Headman Windvogel",vehicles:"CEY29293",late_night:4,speeding:0,total:4,max_speed:7},
+ {driver:"Siyabonga Jack",vehicles:"CEY78059",late_night:0,speeding:3,total:3,max_speed:124},
+ {driver:"Marius Niemand",vehicles:"CEY57306",late_night:0,speeding:3,total:3,max_speed:129},
+ {driver:"Ricardo Govender (Diesel Tag)",vehicles:"CEY63250",late_night:3,speeding:0,total:3,max_speed:114},
+ {driver:"Elton Clayton",vehicles:"CEY72487",late_night:2,speeding:0,total:2,max_speed:108},
+ {driver:"Lovemore Cowera",vehicles:"CEY28255",late_night:2,speeding:0,total:2,max_speed:79},
+ {driver:"Nardino Govender",vehicles:"CEY11873",late_night:0,speeding:2,total:2,max_speed:121},
+ {driver:"Randal Govender",vehicles:"CEY85300",late_night:2,speeding:0,total:2,max_speed:109},
+ {driver:"Graham Swart",vehicles:"CEY28255",late_night:2,speeding:0,total:2,max_speed:81},
+ {driver:"Shaquill Pony",vehicles:"CEY13038",late_night:1,speeding:0,total:1,max_speed:95},
+ {driver:"Ricardo Krige",vehicles:"CEY78059",late_night:1,speeding:0,total:1,max_speed:7}
+];
 
-// Tabs
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');
-  document.getElementById(t.dataset.pane).classList.add('active');
-}));
+function riskTier(r){
+  if(r.max_speed>=100 || r.total>=20) return "high";
+  if(r.total>=8 || r.max_speed>=85) return "medium";
+  return "low";
+}
 
-// Incident log
-const fType=document.getElementById('fType'), fDriver=document.getElementById('fDriver'), logTable=document.getElementById('logTable');
-[...new Set(incidents.map(i=>i[2]))].sort().forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;fDriver.appendChild(o);});
+const logRows = [
+ {date:"2026-09-24",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 106 km/h (heavy vehicle, limit 95)",speed:106,week:"current"},
+ {date:"2026-09-24",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 111 km/h (heavy vehicle, limit 95)",speed:111,week:"current"},
+ {date:"2026-09-24",driver:"Lionel Africa",vehicle:"CEY37921",type:"late_night",detail:"Late-night trip: 22:37 to 22:48",speed:53,week:"current"},
+ {date:"2026-09-24",driver:"Lionel Africa",vehicle:"CEY37921",type:"late_night",detail:"Late-night trip: 23:04 to 23:13",speed:67,week:"current"},
+ {date:"2026-09-24",driver:"Ricardo Govender",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 23:08 to 23:10",speed:6,week:"current"},
+ {date:"2026-09-24",driver:"Ricardo Govender",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 23:15 to 23:31",speed:71,week:"current"},
+ {date:"2026-09-24",driver:"Ricardo Govender",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 23:36 to 23:59",speed:67,week:"current"},
+ {date:"2026-09-24",driver:"Ricardo Govender (Diesel Tag)",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 22:54 to 23:07",speed:114,week:"current"},
+ {date:"2026-09-25",driver:"Edgar Nyomupfukudza",vehicle:"CEY69850",type:"late_night",detail:"Late-night trip: 18:33 to 22:21",speed:82,week:"current"},
+ {date:"2026-09-25",driver:"Edgar Nyomupfukudza",vehicle:"CEY69850",type:"late_night",detail:"Late-night trip: 22:25 to 22:25",speed:0,week:"current"},
+ {date:"2026-09-25",driver:"Edgar Nyomupfukudza",vehicle:"CEY69850",type:"late_night",detail:"Late-night trip: 22:25 to 22:36",speed:15,week:"current"},
+ {date:"2026-09-25",driver:"Ricardo Govender",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 00:00 to 00:34",speed:74,week:"current"},
+ {date:"2026-09-25",driver:"Ricardo Govender",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 00:41 to 01:27",speed:84,week:"current"},
+ {date:"2026-09-25",driver:"Ricardo Govender",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 02:20 to 03:58",speed:91,week:"current"},
+ {date:"2026-09-25",driver:"Siseko Ngxumeshe",vehicle:"CEY19762",type:"late_night",detail:"Late-night trip: 23:31 to 23:35",speed:44,week:"current"},
+ {date:"2026-09-25",driver:"Siseko Ngxumeshe",vehicle:"CEY19762",type:"late_night",detail:"Late-night trip: 23:44 to 23:47",speed:26,week:"current"},
+ {date:"2026-09-25",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 22:42 to 22:46",speed:39,week:"current"},
+ {date:"2026-09-25",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 22:51 to 23:24",speed:82,week:"current"},
+ {date:"2026-09-25",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 23:30 to 23:34",speed:64,week:"current"},
+ {date:"2026-09-25",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 23:36 to 23:59",speed:51,week:"current"},
+ {date:"2026-09-26",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 02:37 to 03:12",speed:92,week:"current"},
+ {date:"2026-09-26",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 00:00 to 00:17",speed:75,week:"current"},
+ {date:"2026-09-26",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 00:21 to 00:56",speed:60,week:"current"},
+ {date:"2026-09-28",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 21:48 to 22:01",speed:82,week:"current"},
+ {date:"2026-09-28",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 22:02 to 22:03",speed:6,week:"current"},
+ {date:"2026-09-28",driver:"Luwayne Potberg",vehicle:"CEY72487",type:"speeding",detail:"Speeding: 124 km/h (light vehicle, limit 120)",speed:124,week:"current"},
+ {date:"2026-09-28",driver:"Unknown",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 22:03 to 22:04",speed:0,week:"current"},
+ {date:"2026-09-29",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 110 km/h (heavy vehicle, limit 95)",speed:110,week:"current"},
+ {date:"2026-09-29",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 96 km/h (heavy vehicle, limit 95)",speed:96,week:"current"},
+ {date:"2026-09-29",driver:"Godwin Aughust",vehicle:"CEY22432",type:"late_night",detail:"Late-night trip: 22:54 to 23:16",speed:102,week:"current"},
+ {date:"2026-09-29",driver:"Godwin Aughust",vehicle:"CEY22432",type:"late_night",detail:"Late-night trip: 22:57 to 23:14",speed:102,week:"current"},
+ {date:"2026-09-29",driver:"Godwin Aughust",vehicle:"CEY22432",type:"late_night",detail:"Late-night trip: 23:39 to 23:59",speed:98,week:"current"},
+ {date:"2026-09-29",driver:"Godwin Aughust",vehicle:"CEY22432",type:"late_night",detail:"Late-night trip: 23:51 to 23:59",speed:98,week:"current"},
+ {date:"2026-09-29",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 22:08 to 22:14",speed:85,week:"current"},
+ {date:"2026-09-29",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 22:18 to 23:56",speed:77,week:"current"},
+ {date:"2026-09-29",driver:"Luwayne Potberg",vehicle:"CEY72487",type:"speeding",detail:"Speeding: 122 km/h (light vehicle, limit 120)",speed:122,week:"current"},
+ {date:"2026-09-29",driver:"Siyabonga Jack",vehicle:"CEY78059",type:"speeding",detail:"Speeding: 121 km/h (light vehicle, limit 120)",speed:121,week:"current"},
+ {date:"2026-09-29",driver:"Siyabonga Jack",vehicle:"CEY78059",type:"speeding",detail:"Speeding: 124 km/h (light vehicle, limit 120)",speed:124,week:"current"},
+ {date:"2026-09-30",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 104 km/h (heavy vehicle, limit 95)",speed:104,week:"current"},
+ {date:"2026-09-30",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 96 km/h (heavy vehicle, limit 95)",speed:96,week:"current"},
+ {date:"2026-09-30",driver:"Godwin Aughust",vehicle:"CEY22432",type:"late_night",detail:"Late-night trip: 00:00 to 00:05",speed:64,week:"current"},
+ {date:"2026-09-30",driver:"Godwin Aughust",vehicle:"CEY22432",type:"late_night",detail:"Late-night trip: 00:14 to 00:18",speed:51,week:"current"},
+ {date:"2026-09-30",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 00:55 to 01:05",speed:67,week:"current"},
+ {date:"2026-09-30",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 22:10 to 22:40",speed:104,week:"current"},
+ {date:"2026-09-30",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 00:01 to 00:52",speed:78,week:"current"},
+ {date:"2026-09-30",driver:"Luwayne Potberg",vehicle:"CEY72487",type:"speeding",detail:"Speeding: 122 km/h (light vehicle, limit 120)",speed:122,week:"current"},
+ {date:"2026-09-30",driver:"Luwayne Potberg",vehicle:"CEY72487",type:"speeding",detail:"Speeding: 124 km/h (light vehicle, limit 120)",speed:124,week:"current"},
+ {date:"2026-09-30",driver:"Luwayne Potberg",vehicle:"CEY72487",type:"speeding",detail:"Speeding: 125 km/h (light vehicle, limit 120)",speed:125,week:"current"},
+ {date:"2026-09-30",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 21:51 to 22:24",speed:88,week:"current"},
+ {date:"2026-09-30",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 22:32 to 22:39",speed:40,week:"current"},
+ {date:"2026-09-30",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 22:46 to 23:01",speed:46,week:"current"},
+ {date:"2026-09-30",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 23:04 to 23:34",speed:55,week:"current"},
+ {date:"2026-09-30",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 23:40 to 23:49",speed:61,week:"current"},
+ {date:"2026-09-17",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 110 km/h (heavy vehicle, limit 95)",speed:110,week:"previous"},
+ {date:"2026-09-17",driver:"Edgar Nyomupfukudza",vehicle:"CEY69850",type:"late_night",detail:"Late-night trip: 19:41 to 22:08",speed:80,week:"previous"},
+ {date:"2026-09-17",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 00:00 to 00:20",speed:107,week:"previous"},
+ {date:"2026-09-17",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 21:48 to 22:12",speed:93,week:"previous"},
+ {date:"2026-09-17",driver:"Siseko Ngxumeshe",vehicle:"CEY19762",type:"late_night",detail:"Late-night trip: 23:02 to 23:16",speed:64,week:"previous"},
+ {date:"2026-09-17",driver:"Unknown",vehicle:"CEY19891",type:"late_night",detail:"Late-night trip: 22:15 to 23:04",speed:77,week:"previous"},
+ {date:"2026-09-18",driver:"Ben Alla",vehicle:"CEY63155",type:"late_night",detail:"Late-night trip: 20:16 to 22:19",speed:83,week:"previous"},
+ {date:"2026-09-18",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 95 km/h (heavy vehicle, limit 95)",speed:95,week:"previous"},
+ {date:"2026-09-18",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 06:42 to 23:56",speed:80,week:"previous"},
+ {date:"2026-09-18",driver:"Nicolas Naidoo",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 21:49 to 22:02",speed:55,week:"previous"},
+ {date:"2026-09-18",driver:"Siseko Ngxumeshe",vehicle:"CEY19762",type:"late_night",detail:"Late-night trip: 22:52 to 23:32",speed:40,week:"previous"},
+ {date:"2026-09-18",driver:"Siyabonga Jack",vehicle:"CEY78059",type:"speeding",detail:"Speeding: 120 km/h (light vehicle, limit 120)",speed:120,week:"previous"},
+ {date:"2026-09-19",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 23:24 to 23:45",speed:68,week:"previous"},
+ {date:"2026-09-19",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 23:48 to 23:51",speed:9,week:"previous"},
+ {date:"2026-09-19",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 23:54 to 23:59",speed:6,week:"previous"},
+ {date:"2026-09-19",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 00:05 to 00:48",speed:104,week:"previous"},
+ {date:"2026-09-19",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 00:01 to 00:01",speed:0,week:"previous"},
+ {date:"2026-09-20",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 00:00 to 00:15",speed:31,week:"previous"},
+ {date:"2026-09-20",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 00:17 to 00:21",speed:30,week:"previous"},
+ {date:"2026-09-20",driver:"Divan Bester",vehicle:"CEY57306",type:"late_night",detail:"Late-night trip: 22:39 to 22:50",speed:76,week:"previous"},
+ {date:"2026-09-20",driver:"Divan Bester",vehicle:"CEY57306",type:"late_night",detail:"Late-night trip: 22:52 to 23:02",speed:59,week:"previous"},
+ {date:"2026-09-20",driver:"Nicolas Naidoo",vehicle:"CEY63250",type:"late_night",detail:"Late-night trip: 22:08 to 22:24",speed:94,week:"previous"},
+ {date:"2026-09-20",driver:"Unknown",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 00:15 to 00:15",speed:0,week:"previous"},
+ {date:"2026-09-21",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 108 km/h (heavy vehicle, limit 95)",speed:108,week:"previous"},
+ {date:"2026-09-21",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 99 km/h (heavy vehicle, limit 95)",speed:99,week:"previous"},
+ {date:"2026-09-21",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 18:39 to 23:59",speed:83,week:"previous"},
+ {date:"2026-09-21",driver:"Lionel Africa",vehicle:"CEY37921",type:"late_night",detail:"Late-night trip: 03:15 to 04:20",speed:113,week:"previous"},
+ {date:"2026-09-22",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 112 km/h (heavy vehicle, limit 95)",speed:112,week:"previous"},
+ {date:"2026-09-22",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 95 km/h (heavy vehicle, limit 95)",speed:95,week:"previous"},
+ {date:"2026-09-22",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 00:09 to 00:47",speed:106,week:"previous"},
+ {date:"2026-09-22",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 22:18 to 22:47",speed:61,week:"previous"},
+ {date:"2026-09-22",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 00:00 to 00:03",speed:12,week:"previous"},
+ {date:"2026-09-22",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 16:02 to 22:12",speed:79,week:"previous"},
+ {date:"2026-09-22",driver:"Unknown",vehicle:"CEY71650",type:"late_night",detail:"Late-night trip: 22:04 to 22:05",speed:15,week:"previous"},
+ {date:"2026-09-23",driver:"Atwell Luvuno",vehicle:"CEY34027",type:"late_night",detail:"Late-night trip: 22:03 to 22:04",speed:20,week:"previous"},
+ {date:"2026-09-23",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 101 km/h (heavy vehicle, limit 95)",speed:101,week:"previous"},
+ {date:"2026-09-23",driver:"Ben Alla",vehicle:"CEY63155",type:"speeding",detail:"Speeding: 108 km/h (heavy vehicle, limit 95)",speed:108,week:"previous"},
+ {date:"2026-09-23",driver:"Kanyerere (Wise)",vehicle:"CEY19309",type:"late_night",detail:"Late-night trip: 23:12 to 23:56",speed:119,week:"previous"},
+ {date:"2026-09-23",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 17:24 to 23:04",speed:80,week:"previous"},
+ {date:"2026-09-23",driver:"Kanyerere (Wise)",vehicle:"CEY48451",type:"late_night",detail:"Late-night trip: 23:04 to 23:09",speed:0,week:"previous"},
+ {date:"2026-09-23",driver:"Marius Niemand",vehicle:"CEY57306",type:"speeding",detail:"Speeding: 124 km/h (light vehicle, limit 120)",speed:124,week:"previous"},
+ {date:"2026-09-23",driver:"Marius Niemand",vehicle:"CEY57306",type:"speeding",detail:"Speeding: 129 km/h (light vehicle, limit 120)",speed:129,week:"previous"}
+];
+
+const trendWeeks = [
+ {label:"3-9 Sep",speeding:0,late_night:68,total:68},
+ {label:"10-16 Sep",speeding:9,late_night:71,total:80},
+ {label:"17-23 Sep",speeding:11,late_night:31,total:42},
+ {label:"24-30 Sep",speeding:13,late_night:40,total:53}
+];
+const trendFull = [43,32,64,48,68,80,42,53]; // 8 weeks oldest->newest totals
+const trendLabels = ["6 wks ago","5 wks ago","4 wks ago","3 wks ago","2 wks ago","Last week","","This week"];
+
+// Populate By Driver table
+const driverTbody = document.querySelector("#driverTable tbody");
+driverRows.forEach(r=>{
+  const tier = riskTier(r);
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${r.driver}</td><td>${r.vehicles}</td><td>${r.late_night}</td><td>${r.speeding}</td><td>${r.total}</td><td>${r.max_speed}</td><td><span class="badge ${tier}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span></td>`;
+  driverTbody.appendChild(tr);
+});
+
+// Populate driver filter dropdown
+const driverSet = [...new Set(logRows.map(r=>r.driver))].sort();
+const filterDriver = document.getElementById("filterDriver");
+driverSet.forEach(d=>{
+  const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
+  filterDriver.appendChild(opt);
+});
+
 function renderLog(){
-  logTable.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-  incidents.filter(i=>(!fType.value||i[3]===fType.value)&&(!fDriver.value||i[2]===fDriver.value))
-    .forEach(i=>{
-      const tr=document.createElement('tr');
-      if(i[5]) tr.className='hl';
-      tr.innerHTML = `<td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td style="color:${i[3]==='speed'?'#E24B4A':'#EF9F27'};font-weight:700">${i[3]==='speed'?'Speeding':'Late-night'}</td><td>${i[4]}</td><td>${i[5]?'<span class="lognew">NEW THIS WEEK</span>':''}</td>`;
-      logTable.appendChild(tr);
+  const dv = filterDriver.value, tv = document.getElementById("filterType").value, wv = document.getElementById("filterWeek").value;
+  const tbody = document.querySelector("#logTable tbody");
+  tbody.innerHTML = "";
+  logRows.filter(r=> (!dv||r.driver===dv) && (!tv||r.type===tv) && (!wv||r.week===wv))
+    .sort((a,b)=> b.date.localeCompare(a.date))
+    .forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.date}</td><td>${r.driver}</td><td>${r.vehicle}</td><td>${r.type==='speeding'?'Speeding':'Late-night'}</td><td>${r.detail}</td><td>${r.speed}</td><td>${r.week==='current'?'<span class="badge new">NEW THIS WEEK</span>':''}</td>`;
+      tbody.appendChild(tr);
     });
 }
-fType.onchange=renderLog; fDriver.onchange=renderLog; renderLog();
+document.getElementById("filterDriver").addEventListener("change",renderLog);
+document.getElementById("filterType").addEventListener("change",renderLog);
+document.getElementById("filterWeek").addEventListener("change",renderLog);
+renderLog();
+
+// Tabs
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
 
 // Charts
-const SPEED='#E24B4A', LATE='#EF9F27', VEH='#378ADD';
-new Chart(driverBar,{type:'bar',data:{labels:["Unknown (tag)", "Kanyerere (Wise)", "Ben Alla", "Ricardo Govender", "Kreasen Chetty", "Edgar Nyomupfukudza", "Nardino Govender", "Nicolas Naidoo"],
-  datasets:[{label:'Late-night',data:[91, 87, 11, 36, 21, 21, 2, 14],backgroundColor:LATE},
-            {label:'Speeding',data:[0, 0, 31, 0, 3, 0, 12, 0],backgroundColor:SPEED}]},
-  options:{responsive:true,scales:{x:{stacked:true,ticks:{font:{size:10}}},y:{stacked:true,beginAtZero:true}}}});
-new Chart(typeDonut,{type:'doughnut',data:{labels:['Speeding','Late-night'],
-  datasets:[{data:[11,31],backgroundColor:[SPEED,LATE]}]},options:{responsive:true}});
-new Chart(vehicleBar,{type:'bar',data:{labels:["CEY63155", "CEY19309", "CEY63250", "CEY48451", "CEY19891", "CEY85300", "CEY72487", "CEY19762"],
-  datasets:[{label:'Incidents',data:[69, 47, 46, 40, 32, 27, 23, 22],backgroundColor:VEH}]},
-  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-new Chart(trendLine,{type:'line',data:{labels:["30 Jul–5 Aug", "6–12 Aug", "13–19 Aug", "20–26 Aug", "27 Aug–2 Sep", "3–9 Sep", "10–16 Sep", "17–23 Sep (new)"],
-  datasets:[{label:'Late-night',data:[42, 39, 25, 51, 42, 68, 71, 31],borderColor:LATE,backgroundColor:LATE,tension:.3},
-            {label:'Speeding',data:[14, 4, 7, 13, 6, 0, 9, 11],borderColor:SPEED,backgroundColor:SPEED,tension:.3},
-            {label:'Total',data:[56, 43, 32, 64, 48, 68, 80, 42],borderColor:'#1F5C8B',backgroundColor:'#1F5C8B',borderDash:[6,4],tension:.3}]},
-  options:{responsive:true,scales:{y:{beginAtZero:true}}}});
+const gridColor = "rgba(142,155,189,0.15)";
+const textColor = "#8e9bbd";
+
+const driverCounts = {};
+logRows.filter(r=>r.week==='current').forEach(r=>{driverCounts[r.driver]=(driverCounts[r.driver]||0)+1;});
+const driverChartData = Object.entries(driverCounts).sort((a,b)=>b[1]-a[1]);
+new Chart(document.getElementById('driverChart'),{
+  type:'bar',
+  data:{labels:driverChartData.map(d=>d[0]),datasets:[{label:'Incidents this week',data:driverChartData.map(d=>d[1]),backgroundColor:'#4f8cff'}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},title:{display:true,text:'Incidents by Driver (This Week)',color:textColor}},scales:{x:{grid:{color:gridColor},ticks:{color:textColor}},y:{grid:{display:false},ticks:{color:textColor,font:{size:10}}}}}
+});
+
+const typeCounts = {speeding:0,late_night:0};
+logRows.filter(r=>r.week==='current').forEach(r=>{typeCounts[r.type]++;});
+new Chart(document.getElementById('typeChart'),{
+  type:'doughnut',
+  data:{labels:['Speeding','Late-Night'],datasets:[{data:[typeCounts.speeding,typeCounts.late_night],backgroundColor:['#f87171','#4f8cff']}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:textColor}},title:{display:true,text:'Incident Type (This Week)',color:textColor}}}
+});
+
+const vehicleCounts = {};
+logRows.filter(r=>r.week==='current').forEach(r=>{vehicleCounts[r.vehicle]=(vehicleCounts[r.vehicle]||0)+1;});
+const vehicleChartData = Object.entries(vehicleCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+new Chart(document.getElementById('vehicleChart'),{
+  type:'bar',
+  data:{labels:vehicleChartData.map(d=>d[0]),datasets:[{label:'Incidents this week',data:vehicleChartData.map(d=>d[1]),backgroundColor:'#34d399'}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'Top Vehicles (This Week)',color:textColor}},scales:{x:{grid:{display:false},ticks:{color:textColor}},y:{grid:{color:gridColor},ticks:{color:textColor}}}}
+});
+
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{labels:["7 wks ago","6 wks ago","5 wks ago","4 wks ago","3 wks ago","2 wks ago","Last week","This week"],
+    datasets:[
+      {label:'Total',data:trendFull,borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,0.15)',tension:0.3,fill:true},
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:textColor}},title:{display:true,text:'8-Week Incident Trend',color:textColor}},scales:{x:{grid:{color:gridColor},ticks:{color:textColor}},y:{grid:{color:gridColor},ticks:{color:textColor}}}}
+});
 </script>
 </body>
 </html>
