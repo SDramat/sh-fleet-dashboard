@@ -1,1 +1,245 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sustainable Heating — Fleet Transgressions Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#243147; --border:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --green:#34d399;
+    --amber:#fbbf24; --red:#f87171; --red-bg:#3f1d1d; --green-bg:#15302a; --amber-bg:#3a2f12;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1180px;margin:0 auto;padding:16px;}
+  header.banner{background:linear-gradient(135deg,#0ea5e9,#0369a1);border-radius:12px;padding:20px 24px;margin-bottom:16px;}
+  header.banner h1{margin:0 0 4px;font-size:1.4rem;}
+  header.banner p{margin:0;color:#dbeafe;font-size:0.9rem;}
+  .callout{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+  .callout .card{flex:1;min-width:260px;border-radius:10px;padding:14px 16px;border:1px solid var(--border);}
+  .callout .watch{background:var(--amber-bg);border-color:#92700a;}
+  .callout .good{background:var(--green-bg);border-color:#0d5c47;}
+  .callout .card h3{margin:0 0 6px;font-size:0.85rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+  .callout .card p{margin:0;font-size:0.92rem;line-height:1.4;}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px;}
+  .metric{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .metric .label{color:var(--muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  .metric .value{font-size:1.9rem;font-weight:700;margin:4px 0;}
+  .metric .delta{font-size:0.82rem;}
+  .delta.up{color:var(--red);} .delta.down{color:var(--green);} .delta.flat{color:var(--muted);}
+  table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:0.78rem;text-transform:uppercase;letter-spacing:.03em;}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px;overflow-x:auto;}
+  .panel h2{margin:0 0 12px;font-size:1.05rem;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:600;}
+  .badge.up{background:#3f1d1d;color:var(--red);} .badge.down{background:#15302a;color:var(--green);} .badge.flat{background:#243147;color:var(--muted);} .badge.new{background:#3a2f12;color:var(--amber);}
+  .risk{padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;}
+  .risk.High{background:#3f1d1d;color:var(--red);} .risk.Medium{background:#3a2f12;color:var(--amber);} .risk.Low{background:#15302a;color:var(--green);}
+  .tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+  .tab-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;}
+  .tab-btn.active{background:var(--accent);color:#06283e;border-color:var(--accent);font-weight:600;}
+  .tab-content{display:none;} .tab-content.active{display:block;}
+  .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
+  .chart-box{background:var(--panel2);border-radius:8px;padding:12px;height:300px;}
+  input#logFilter{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;width:100%;max-width:320px;margin-bottom:12px;}
+  .tag-new{background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:5px;font-size:0.68rem;font-weight:700;margin-left:6px;}
+  footer{color:var(--muted);font-size:0.78rem;text-align:center;padding:18px 0;}
+  tr.hidden-row{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="banner">
+  <h1>Fleet Transgressions — Week of 22–28 October 2026</h1>
+  <p>Reported 29 October 2026 · Sustainable Heating Fleet Monitoring</p>
+</header>
+
+<div class="callout">
+  <div class="card watch">
+    <h3>New This Week — Watch</h3>
+    <p><strong>Luwayne Potberg</strong> appears for the first time in this 8-week window with 13 incidents in a single week on CEY72487 — repeated speeding 120–133 km/h (light vehicle, limit 120), escalating within the week, plus two late-night trips exceeding 3 hours including a 126 km/h and a 128 km/h reading. <strong>Ben Alla</strong> logged 7 more speeding incidents on CEY63155 (heavy vehicle, limit 95 km/h), 105–120 km/h — 7 straight weeks of near-daily speeding on this vehicle. <strong>Nardino Govender</strong> also returned with 7 speeding incidents (120–125 km/h) after a quiet week.</p>
+  </div>
+  <div class="card watch">
+    <h3>Fleet-wide</h3>
+    <p>Total incidents jumped to 53 this week (29 last week, up ~83%). Both categories rose: speeding to 25 (from 12, up ~108%) and late-night trips to 28 (from 17, up ~65%).</p>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric"><div class="label">Total Incidents</div><div class="value">53</div><div class="delta up">▲ +24 vs last week (29)</div></div>
+  <div class="metric"><div class="label">Late-Night Trips</div><div class="value">28</div><div class="delta up">▲ +11 vs last week (17)</div></div>
+  <div class="metric"><div class="label">Speeding</div><div class="value">25</div><div class="delta up">▲ +13 vs last week (12)</div></div>
+  <div class="metric"><div class="label">Repeat Offenders</div><div class="value">6</div><div class="delta flat">Ben Alla, Edgar Nyomupfukudza, Kanyerere (Wise), Lionel Africa, Nicolas Naidoo, Shaquill Pony</div></div>
+</div>
+
+<div class="panel">
+  <h2>Week-on-Week Comparison (last 4 weeks)</h2>
+  <table>
+    <thead><tr><th>Week</th><th>Late-Night</th><th>Speeding</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td>1–7 Oct</td><td>8</td><td>16</td><td>24</td></tr>
+      <tr><td>8–14 Oct</td><td>13</td><td>16</td><td>29</td></tr>
+      <tr><td>15–21 Oct</td><td>17</td><td>12</td><td>29</td></tr>
+      <tr><td><strong>22–28 Oct (current)</strong></td><td><strong>28</strong></td><td><strong>25</strong></td><td><strong>53</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Per-Driver Change — This Week vs Last Week</h2>
+  <table>
+    <thead><tr><th>Driver</th><th>This Week</th><th>Last Week</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td>Luwayne Potberg</td><td>13</td><td>0</td><td><span class="badge new">NEW</span></td></tr>
+      <tr><td>Ben Alla</td><td>7</td><td>9</td><td><span class="badge down">▼ −2</span></td></tr>
+      <tr><td>Nardino Govender</td><td>7</td><td>0</td><td><span class="badge new">NEW</span></td></tr>
+      <tr><td>Unknown / unassigned tag</td><td>7</td><td>0</td><td><span class="badge new">NEW</span></td></tr>
+      <tr><td>Atwell Luvuno</td><td>5</td><td>0</td><td><span class="badge new">NEW</span></td></tr>
+      <tr><td>Edgar Nyomupfukudza</td><td>3</td><td>1</td><td><span class="badge up">▲ +2</span></td></tr>
+      <tr><td>Kanyerere (Wise)</td><td>3</td><td>4</td><td><span class="badge down">▼ −1</span></td></tr>
+      <tr><td>Nicolas Naidoo</td><td>3</td><td>3</td><td><span class="badge flat">flat</span></td></tr>
+      <tr><td>Godwin Aughust</td><td>2</td><td>0</td><td><span class="badge new">NEW</span></td></tr>
+      <tr><td>Shaquill Pony</td><td>1</td><td>2</td><td><span class="badge down">▼ −1</span></td></tr>
+      <tr><td>Siyabonga Jack</td><td>1</td><td>0</td><td><span class="badge new">NEW</span></td></tr>
+      <tr><td>Lionel Africa</td><td>1</td><td>2</td><td><span class="badge down">▼ −1</span></td></tr>
+      <tr><td>Ricardo Govender</td><td>0</td><td>3</td><td><span class="badge down">resolved</span></td></tr>
+      <tr><td>Sifiso Gwiji</td><td>0</td><td>1</td><td><span class="badge down">resolved</span></td></tr>
+      <tr><td>Rudolph Oelofse</td><td>0</td><td>2</td><td><span class="badge down">resolved</span></td></tr>
+      <tr><td>Lovemore</td><td>0</td><td>2</td><td><span class="badge down">resolved</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="bydriver">By Driver</button>
+  <button class="tab-btn" data-tab="log">Incident Log</button>
+  <button class="tab-btn" data-tab="trend">Weekly Trend</button>
+</div>
+
+<div id="overview" class="tab-content active panel">
+  <h2>Overview — This Week</h2>
+  <div class="charts-grid">
+    <div class="chart-box"><canvas id="driverChart"></canvas></div>
+    <div class="chart-box"><canvas id="typeChart"></canvas></div>
+    <div class="chart-box"><canvas id="vehicleChart"></canvas></div>
+  </div>
+</div>
+
+<div id="bydriver" class="tab-content panel">
+  <h2>By Driver — 8-Week Rolling Totals (incl. risk tier)</h2>
+  <table>
+    <thead><tr><th>Driver</th><th>Vehicle(s)</th><th>Late-Night</th><th>Speeding</th><th>Total</th><th>Max Speed</th><th>Risk</th></tr></thead>
+    <tbody id="driverTableBody"></tbody>
+  </table>
+</div>
+
+<div id="log" class="tab-content panel">
+  <h2>Incident Log — Current &amp; Previous Week</h2>
+  <input id="logFilter" placeholder="Filter by driver, vehicle, or type…">
+  <table>
+    <thead><tr><th>Date</th><th>Driver</th><th>Vehicle</th><th>Type</th><th>Detail</th><th>Max Speed</th></tr></thead>
+    <tbody id="logTableBody"></tbody>
+  </table>
+</div>
+
+<div id="trend" class="tab-content panel">
+  <h2>Weekly Trend — Last 8 Weeks</h2>
+  <div class="chart-box" style="height:360px;"><canvas id="trendChart"></canvas></div>
+</div>
+
+<footer>Generated by Jarvis · 29 October 2026 · Confidential — Internal Distribution</footer>
+</div>
+
+<script>
+const palette = {accent:'#38bdf8', green:'#34d399', amber:'#fbbf24', red:'#f87171', muted:'#94a3b8', grid:'#334155'};
+Chart.defaults.color = '#e2e8f0';
+Chart.defaults.borderColor = '#334155';
+
+// ---- Overview: incidents by driver (this week) ----
+const driverLabels = ["Luwayne Potberg", "Ben Alla", "Nardino Govender", "Unknown / unassigned tag", "Atwell Luvuno", "Edgar Nyomupfukudza", "Kanyerere (Wise)", "Nicolas Naidoo", "Godwin Aughust", "Shaquill Pony", "Siyabonga Jack", "Lionel Africa"];
+const driverCounts = [13, 7, 7, 7, 5, 3, 3, 3, 2, 1, 1, 1];
+new Chart(document.getElementById('driverChart'), {
+  type:'bar',
+  data:{labels:driverLabels, datasets:[{label:'Incidents this week', data:driverCounts, backgroundColor:palette.accent}]},
+  options:{plugins:{title:{display:true,text:'Incidents by Driver (This Week)'},legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:60,minRotation:40,font:{size:9}}}}}
+});
+
+new Chart(document.getElementById('typeChart'), {
+  type:'doughnut',
+  data:{labels:['Speeding','Late-Night'], datasets:[{data:[25, 28], backgroundColor:[palette.red, palette.amber]}]},
+  options:{plugins:{title:{display:true,text:'Incidents by Type (This Week)'}}}
+});
+
+const vehicleTotals = {"CEY72487": 14, "CEY34027": 10, "CEY11873": 7, "CEY63155": 7, "CEY63250": 4, "CEY69850": 3, "CEY22432": 2, "CEY19309": 2, "CEY37921": 1, "CEY48451": 1, "CEY78059": 1, "CEY13038": 1};
+new Chart(document.getElementById('vehicleChart'), {
+  type:'bar',
+  data:{labels:Object.keys(vehicleTotals), datasets:[{label:'Incidents', data:Object.values(vehicleTotals), backgroundColor:palette.green}]},
+  options:{indexAxis:'y', plugins:{title:{display:true,text:'Top Vehicles (This Week)'},legend:{display:false}}}
+});
+
+// ---- By Driver 8-week table ----
+const driverRows = [["Unknown / unassigned tag", "CEY19891, CEY22432, CEY34027, CEY57306, CEY63155, CEY63250, CEY71650, CEY72487", 74, 0, 74, 91], ["Ben Alla", "CEY63155", 2, 57, 59, 120], ["Kanyerere (Wise)", "CEY19309, CEY48451", 47, 2, 49, 124], ["Ricardo Govender", "CEY63250, CEY71650, CEY85300", 43, 0, 43, 110], ["Luwayne Potberg", "CEY37921, CEY72487", 4, 18, 22, 133], ["Nicolas Naidoo", "CEY34027, CEY63250, CEY85300", 15, 1, 16, 120], ["Atwell Luvuno", "CEY34027", 14, 0, 14, 92], ["Nardino Govender", "CEY11873", 0, 11, 11, 125], ["Edgar Nyomupfukudza", "CEY69850", 11, 0, 11, 85], ["Lionel Africa", "CEY37921", 9, 1, 10, 121], ["Siseko Ngxumeshe", "CEY19762", 10, 0, 10, 99], ["Sifiso Gwiji", "CEY19762", 9, 0, 9, 108], ["Godwin Aughust", "CEY22432", 9, 0, 9, 107], ["Shaquill Pony", "CEY11873, CEY13038", 6, 0, 6, 112], ["Kreasen Chetty", "CEY63250, CEY85300", 5, 0, 5, 111], ["Gavin Windvogel", "CEY22432", 5, 0, 5, 110], ["Divan Bester", "CEY57306", 4, 0, 4, 106], ["Siyabonga Jack", "CEY78059", 0, 4, 4, 124], ["Ricardo Govender (Diesel Tag)", "CEY63250", 3, 0, 3, 114], ["Randal Govender", "CEY85300", 2, 0, 2, 109], ["Marius Niemand", "CEY57306", 0, 2, 2, 129], ["Noel Williams", "CEY72487", 0, 2, 2, 134], ["Rudolph Oelofse", "CEY72487", 0, 2, 2, 134], ["Lovemore", "CEY28255", 2, 0, 2, 80], ["Ricardo Krige", "CEY78059", 1, 0, 1, 7], ["Steven Dramat", "CEY63250", 1, 0, 1, 105], ["Elton Clayton", "CEY72487", 0, 1, 1, 121], ["Lami Kotobe", "CEY34027", 0, 1, 1, 121]];
+function riskTier(total, maxSpeed){
+  if (maxSpeed >= 100 || total >= 20) return 'High';
+  if (total >= 8 || maxSpeed >= 85) return 'Medium';
+  return 'Low';
+}
+const driverBody = document.getElementById('driverTableBody');
+driverRows.forEach(r=>{
+  const [name,veh,ln,sp,tot,mx] = r;
+  const tier = riskTier(tot, mx);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${name}</td><td>${veh}</td><td>${ln}</td><td>${sp}</td><td>${tot}</td><td>${mx} km/h</td><td><span class="risk ${tier}">${tier}</span></td>`;
+  driverBody.appendChild(tr);
+});
+
+// ---- Incident log: current + previous week ----
+const logRows = [["2026-10-28", "Godwin Aughust", "CEY22432", "Late-Night", "Late-night trip 01:57–02:26", "86", true], ["2026-10-28", "Godwin Aughust", "CEY22432", "Late-Night", "Late-night trip 03:56–04:33", "107", true], ["2026-10-28", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 120 km/h (light vehicle, limit 120)", "120", true], ["2026-10-28", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 122 km/h (light vehicle, limit 120)", "122", true], ["2026-10-27", "Lionel Africa", "CEY37921", "Speeding", "Speeding: 121 km/h (light vehicle, limit 120)", "121", true], ["2026-10-27", "Luwayne Potberg", "CEY72487", "Late-Night", "Late-night trip 03:13–03:26", "118", true], ["2026-10-27", "Luwayne Potberg", "CEY72487", "Late-Night", "Late-night trip 03:31–07:00", "128", true], ["2026-10-27", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 127 km/h (light vehicle, limit 120)", "127", true], ["2026-10-27", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 128 km/h (light vehicle, limit 120)", "128", true], ["2026-10-27", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 133 km/h (light vehicle, limit 120)", "133", true], ["2026-10-27", "Unknown", "CEY72487", "Late-Night", "Late-night trip 02:51–02:51", "0", true], ["2026-10-26", "Ben Alla", "CEY63155", "Speeding", "Speeding: 112 km/h (heavy vehicle, limit 95)", "112", true], ["2026-10-26", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 121 km/h (light vehicle, limit 120)", "121", true], ["2026-10-26", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 122 km/h (light vehicle, limit 120)", "122", true], ["2026-10-26", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 123 km/h (light vehicle, limit 120)", "123", true], ["2026-10-26", "Nicolas Naidoo", "CEY63250", "Late-Night", "Late-night trip 00:00–00:00", "0", true], ["2026-10-26", "Nicolas Naidoo", "CEY63250", "Late-Night", "Late-night trip 00:07–00:19", "59", true], ["2026-10-25", "Ben Alla", "CEY63155", "Late-Night", "Late-night trip 22:09–22:09", "5", true], ["2026-10-25", "Kanyerere (Wise)", "CEY19309", "Late-Night", "Late-night trip 22:11–22:31", "111", true], ["2026-10-25", "Kanyerere (Wise)", "CEY48451", "Late-Night", "Late-night trip 19:35–22:02", "82", true], ["2026-10-25", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 124 km/h (light vehicle, limit 120)", "124", true], ["2026-10-25", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 125 km/h (light vehicle, limit 120)", "125", true], ["2026-10-25", "Nicolas Naidoo", "CEY63250", "Late-Night", "Late-night trip 23:32–23:59", "107", true], ["2026-10-25", "Unknown", "CEY63250", "Late-Night", "Late-night trip 22:21–22:21", "0", true], ["2026-10-24", "Atwell Luvuno", "CEY34027", "Late-Night", "Late-night trip 00:31–02:03", "81", true], ["2026-10-24", "Ben Alla", "CEY63155", "Speeding", "Speeding: 117 km/h (heavy vehicle, limit 95)", "117", true], ["2026-10-24", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 121 km/h (light vehicle, limit 120)", "121", true], ["2026-10-24", "Unknown", "CEY34027", "Late-Night", "Late-night trip 00:20–00:20", "0", true], ["2026-10-24", "Unknown", "CEY34027", "Late-Night", "Late-night trip 02:38–02:38", "0", true], ["2026-10-24", "Unknown", "CEY34027", "Late-Night", "Late-night trip 02:40–02:40", "0", true], ["2026-10-24", "Unknown", "CEY34027", "Late-Night", "Late-night trip 02:42–02:44", "0", true], ["2026-10-24", "Unknown", "CEY34027", "Late-Night", "Late-night trip 03:19–03:50", "52", true], ["2026-10-23", "Atwell Luvuno", "CEY34027", "Late-Night", "Late-night trip 21:38–22:00", "70", true], ["2026-10-23", "Atwell Luvuno", "CEY34027", "Late-Night", "Late-night trip 22:03–22:07", "50", true], ["2026-10-23", "Atwell Luvuno", "CEY34027", "Late-Night", "Late-night trip 22:46–22:47", "12", true], ["2026-10-23", "Atwell Luvuno", "CEY34027", "Late-Night", "Late-night trip 23:33–23:34", "0", true], ["2026-10-23", "Ben Alla", "CEY63155", "Speeding", "Speeding: 106 km/h (heavy vehicle, limit 95)", "106", true], ["2026-10-23", "Ben Alla", "CEY63155", "Speeding", "Speeding: 120 km/h (heavy vehicle, limit 95)", "120", true], ["2026-10-23", "Edgar Nyomupfukudza", "CEY69850", "Late-Night", "Late-night trip 00:02–00:02", "0", true], ["2026-10-23", "Edgar Nyomupfukudza", "CEY69850", "Late-Night", "Late-night trip 00:04–00:21", "7", true], ["2026-10-23", "Luwayne Potberg", "CEY72487", "Late-Night", "Late-night trip 03:10–03:17", "54", true], ["2026-10-23", "Luwayne Potberg", "CEY72487", "Late-Night", "Late-night trip 03:20–06:45", "126", true], ["2026-10-23", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 120 km/h (light vehicle, limit 120)", "120", true], ["2026-10-23", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 124 km/h (light vehicle, limit 120)", "124", true], ["2026-10-23", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 126 km/h (light vehicle, limit 120)", "126", true], ["2026-10-23", "Nardino Govender", "CEY11873", "Speeding", "Speeding: 120 km/h (light vehicle, limit 120)", "120", true], ["2026-10-23", "Siyabonga Jack", "CEY78059", "Speeding", "Speeding: 121 km/h (light vehicle, limit 120)", "121", true], ["2026-10-22", "Ben Alla", "CEY63155", "Speeding", "Speeding: 105 km/h (heavy vehicle, limit 95)", "105", true], ["2026-10-22", "Ben Alla", "CEY63155", "Speeding", "Speeding: 110 km/h (heavy vehicle, limit 95)", "110", true], ["2026-10-22", "Edgar Nyomupfukudza", "CEY69850", "Late-Night", "Late-night trip 15:04–23:57", "84", true], ["2026-10-22", "Kanyerere (Wise)", "CEY19309", "Speeding", "Speeding: 122 km/h (light vehicle, limit 120)", "122", true], ["2026-10-22", "Luwayne Potberg", "CEY72487", "Speeding", "Speeding: 122 km/h (light vehicle, limit 120)", "122", true], ["2026-10-22", "Shaquill Pony", "CEY13038", "Late-Night", "Late-night trip 21:43–22:22", "74", true], ["2026-10-21", "Ben Alla", "CEY63155", "Speeding", "Speeding: 102 km/h (heavy vehicle, limit 95)", "102", false], ["2026-10-21", "Ben Alla", "CEY63155", "Speeding", "Speeding: 103 km/h (heavy vehicle, limit 95)", "103", false], ["2026-10-21", "Ben Alla", "CEY63155", "Speeding", "Speeding: 111 km/h (heavy vehicle, limit 95)", "111", false], ["2026-10-21", "Kanyerere (Wise)", "CEY19309", "Late-Night", "Late-night trip 02:34–03:03", "124", false], ["2026-10-21", "Kanyerere (Wise)", "CEY19309", "Speeding", "Speeding: 124 km/h (light vehicle, limit 120)", "124", false], ["2026-10-21", "Kanyerere (Wise)", "CEY48451", "Late-Night", "Late-night trip 01:44–02:24", "11", false], ["2026-10-20", "Ben Alla", "CEY63155", "Speeding", "Speeding: 106 km/h (heavy vehicle, limit 95)", "106", false], ["2026-10-20", "Ben Alla", "CEY63155", "Speeding", "Speeding: 112 km/h (heavy vehicle, limit 95)", "112", false], ["2026-10-20", "Lovemore", "CEY28255", "Late-Night", "Late-night trip 00:25–01:56", "79", false], ["2026-10-20", "Lovemore", "CEY28255", "Late-Night", "Late-night trip 01:59–02:37", "80", false], ["2026-10-20", "Nicolas Naidoo", "CEY63250", "Late-Night", "Late-night trip 21:44–22:15", "108", false], ["2026-10-20", "Shaquill Pony", "CEY13038", "Late-Night", "Late-night trip 22:21–22:23", "17", false], ["2026-10-20", "Shaquill Pony", "CEY13038", "Late-Night", "Late-night trip 22:29–22:36", "67", false], ["2026-10-19", "Lionel Africa", "CEY37921", "Late-Night", "Late-night trip 22:48–23:00", "86", false], ["2026-10-19", "Lionel Africa", "CEY37921", "Late-Night", "Late-night trip 23:00–23:22", "76", false], ["2026-10-19", "Rudolph Oelofse", "CEY72487", "Speeding", "Speeding: 125 km/h (light vehicle, limit 120)", "125", false], ["2026-10-19", "Rudolph Oelofse", "CEY72487", "Speeding", "Speeding: 134 km/h (light vehicle, limit 120)", "134", false], ["2026-10-18", "Nicolas Naidoo", "CEY63250", "Late-Night", "Late-night trip 21:54–22:33", "109", false], ["2026-10-18", "Ricardo Govender", "CEY71650", "Late-Night", "Late-night trip 02:29–02:39", "105", false], ["2026-10-18", "Ricardo Govender", "CEY71650", "Late-Night", "Late-night trip 02:53–03:05", "109", false], ["2026-10-18", "Sifiso Gwiji", "CEY19762", "Late-Night", "Late-night trip 21:58–22:11", "80", false], ["2026-10-17", "Ricardo Govender", "CEY71650", "Late-Night", "Late-night trip 21:59–22:29", "108", false], ["2026-10-16", "Ben Alla", "CEY63155", "Speeding", "Speeding: 104 km/h (heavy vehicle, limit 95)", "104", false], ["2026-10-16", "Ben Alla", "CEY63155", "Speeding", "Speeding: 106 km/h (heavy vehicle, limit 95)", "106", false], ["2026-10-16", "Ben Alla", "CEY63155", "Speeding", "Speeding: 107 km/h (heavy vehicle, limit 95)", "107", false], ["2026-10-16", "Ben Alla", "CEY63155", "Speeding", "Speeding: 108 km/h (heavy vehicle, limit 95)", "108", false], ["2026-10-16", "Edgar Nyomupfukudza", "CEY69850", "Late-Night", "Late-night trip 18:54–23:21", "81", false], ["2026-10-16", "Nicolas Naidoo", "CEY63250", "Late-Night", "Late-night trip 23:04–23:16", "56", false], ["2026-10-15", "Kanyerere (Wise)", "CEY19309", "Late-Night", "Late-night trip 21:47–22:37", "112", false]];
+const logBody = document.getElementById('logTableBody');
+function renderLog(filter){
+  logBody.innerHTML = '';
+  const f = (filter||'').toLowerCase();
+  logRows.forEach(r=>{
+    const [date,driver,veh,type,detail,mx,isNew] = r;
+    const hay = (date+driver+veh+type+detail).toLowerCase();
+    if (f && !hay.includes(f)) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${date}</td><td>${driver}${isNew?'<span class="tag-new">NEW THIS WEEK</span>':''}</td><td>${veh}</td><td>${type}</td><td>${detail}</td><td>${mx} km/h</td>`;
+    logBody.appendChild(tr);
+  });
+}
+renderLog('');
+document.getElementById('logFilter').addEventListener('input', e=>renderLog(e.target.value));
+
+// ---- Weekly trend (8 weeks) ----
+const trendLabels = ["3–9 Sep", "10–16 Sep", "17–23 Sep", "24–30 Sep", "1–7 Oct", "8–14 Oct", "15–21 Oct", "22–28 Oct"];
+const trendLate = [68, 71, 31, 40, 8, 13, 17, 28];
+const trendSpeed = [0, 9, 11, 13, 16, 16, 12, 25];
+const trendTotal = trendLate.map((v,i)=>v+trendSpeed[i]);
+new Chart(document.getElementById('trendChart'), {
+  type:'line',
+  data:{labels:trendLabels, datasets:[
+    {label:'Total', data:trendTotal, borderColor:palette.accent, backgroundColor:'transparent', tension:0.3},
+    {label:'Late-Night', data:trendLate, borderColor:palette.amber, backgroundColor:'transparent', tension:0.3},
+    {label:'Speeding', data:trendSpeed, borderColor:palette.red, backgroundColor:'transparent', tension:0.3}
+  ]},
+  options:{plugins:{title:{display:true,text:'8-Week Incident Trend'}}}
+});
+
+// ---- Tabs ----
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
